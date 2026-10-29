@@ -21,27 +21,36 @@ interface PlanCardProps {
   plan: PlanItem;
   ctaText?: string;
   ctaHref?: string;
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
-export function PlanCard({ plan, ctaText = "Select plan", ctaHref }: PlanCardProps) {
+export function PlanCard({
+  plan,
+  ctaText = "Select Plan",
+  ctaHref,
+  disabled = false,
+  disabledReason,
+}: PlanCardProps) {
   const grossTotalPaise = plan.durationMonths * plan.baseMonthlyPricePaise;
   const discountPaise = Math.round((grossTotalPaise * plan.discountPercentage) / 100);
   const finalTotalPaise = Math.max(0, grossTotalPaise - discountPaise);
   const effectiveMonthlyPaise = Math.round(finalTotalPaise / plan.durationMonths);
+  const minimumUpfrontPaise = Math.round(finalTotalPaise * 0.5);
 
-  const destination = ctaHref || `/checkout/${plan.id}`;
+  const destination = ctaHref || `/plans/checkout?planId=${plan.id}`;
 
   return (
     <Card
       className={cn(
-        "relative flex flex-col justify-between transition-all hover:border-muted-foreground/40",
+        "relative flex flex-col justify-between transition-all hover:border-muted-foreground/40 bg-card",
         plan.isPopular && "border-primary shadow-lg shadow-primary/5"
       )}
     >
       {plan.isPopular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <Badge variant="default" className="text-[11px] font-semibold px-3 py-0.5 normal-case tracking-normal">
-            Most popular
+            Most Popular
           </Badge>
         </div>
       )}
@@ -49,10 +58,12 @@ export function PlanCard({ plan, ctaText = "Select plan", ctaHref }: PlanCardPro
       <div>
         <CardHeader className="space-y-3 pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
+            <CardTitle className="text-xl font-bold font-display uppercase tracking-tight">
+              {plan.name}
+            </CardTitle>
             {plan.discountPercentage > 0 && (
-              <Badge variant="accent" className="normal-case tracking-normal text-xs">
-                {plan.discountPercentage}% off
+              <Badge variant="accent" className="normal-case tracking-normal text-xs font-mono">
+                {plan.discountPercentage}% OFF
               </Badge>
             )}
           </div>
@@ -92,7 +103,7 @@ export function PlanCard({ plan, ctaText = "Select plan", ctaHref }: PlanCardPro
             <div className="rounded border border-primary/30 bg-primary/5 px-3 py-2 text-xs">
               <span className="font-semibold text-primary block">Partial payment available</span>
               <span className="text-muted-foreground">
-                Pay 50% upfront to activate; settle the remaining balance any time before your plan ends.
+                Pay 50% upfront ({formatPaiseToRupees(minimumUpfrontPaise)}) to activate; settle the rest before your plan ends.
               </span>
             </div>
           ) : (
@@ -118,14 +129,24 @@ export function PlanCard({ plan, ctaText = "Select plan", ctaHref }: PlanCardPro
       </div>
 
       <CardFooter className="pt-4">
-        <Link href={destination} className="w-full">
+        {disabled ? (
           <Button
-            variant={plan.isPopular ? "default" : "outline"}
-            className="w-full font-semibold"
+            variant="outline"
+            disabled
+            className="w-full font-semibold opacity-60 cursor-not-allowed text-xs"
           >
-            {ctaText}
+            {disabledReason || "Active Plan in Progress"}
           </Button>
-        </Link>
+        ) : (
+          <Link href={destination} className="w-full">
+            <Button
+              variant={plan.isPopular ? "default" : "outline"}
+              className="w-full font-semibold"
+            >
+              {ctaText}
+            </Button>
+          </Link>
+        )}
       </CardFooter>
     </Card>
   );
