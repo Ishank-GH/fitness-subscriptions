@@ -4,20 +4,21 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, ArrowRight } from "lucide-react";
+import { useAuth, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-interface NavbarProps {
-  isSignedIn?: boolean;
-}
-
-export function Navbar({ isSignedIn = false }: NavbarProps) {
+export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const pathname = usePathname();
+  const [prevPathname, setPrevPathname] = React.useState(pathname);
+  const { isSignedIn } = useAuth();
 
-  React.useEffect(() => {
+  // Close mobile drawer when the route changes during rendering
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setMobileMenuOpen(false);
-  }, [pathname]);
+  }
 
   const navLinks = [
     { href: "/plans", label: "Plans & Pricing" },
@@ -61,15 +62,24 @@ export function Navbar({ isSignedIn = false }: NavbarProps) {
           })}
         </nav>
 
-        {/* Desktop Action (Auth Toggle: Sign In vs Dashboard) */}
+        {/* Desktop Action (Clerk useAuth) */}
         <div className="hidden md:flex items-center gap-4">
           {isSignedIn ? (
-            <Link href="/dashboard">
-              <Button size="sm" className="gap-1.5 font-medium">
-                Dashboard
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link href="/dashboard">
+                <Button size="sm" className="gap-1.5 font-medium">
+                  Dashboard
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "h-8 w-8 border border-border",
+                  },
+                }}
+              />
+            </div>
           ) : (
             <div className="flex items-center gap-3">
               <Link href="/sign-in">
@@ -87,7 +97,8 @@ export function Navbar({ isSignedIn = false }: NavbarProps) {
         </div>
 
         {/* Mobile Hamburger Toggle */}
-        <div className="flex md:hidden">
+        <div className="flex items-center gap-2 md:hidden">
+          {isSignedIn && <UserButton />}
           <Button
             variant="ghost"
             size="icon"

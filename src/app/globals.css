@@ -49,3 +49,102 @@
     letter-spacing: -0.02em;
   }
 }
+
+/* Custom Ironvale Dark Styling for Clerk Components */
+.cl-card {
+  background-color: #111622 !important;
+  border: 1px solid #1e2738 !important;
+  color: #f8fafc !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 0.375rem !important;
+}
+
+.cl-headerTitle {
+  color: #f8fafc !important;
+  font-family: var(--font-display), sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: -0.01em !important;
+}
+
+.cl-headerSubtitle {
+  color: #94a3b8 !important;
+}
+
+.cl-socialButtonsBlockButton {
+  background-color: #171e2b !important;
+  border: 1px solid #1e2738 !important;
+  color: #f8fafc !important;
+}
+
+.cl-socialButtonsBlockButton:hover {
+  background-color: #1f2736 !important;
+}
+
+.cl-socialButtonsBlockButtonText {
+  color: #f8fafc !important;
+}
+
+.cl-dividerLine {
+  background-color: #1e2738 !important;
+}
+
+.cl-dividerText {
+  color: #94a3b8 !important;
+  font-family: monospace !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+}
+
+.cl-formFieldLabel {
+  color: #f8fafc !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+}
+
+.cl-formFieldInput {
+  background-color: #090d14 !important;
+  border: 1px solid #1e2738 !important;
+  color: #f8fafc !important;
+  border-radius: 0.375rem !important;
+}
+
+.cl-formFieldInput:focus {
+  border-color: #e11d48 !important;
+  box-shadow: 0 0 0 1px #e11d48 !important;
+}
+
+.cl-formButtonPrimary {
+  background-color: #e11d48 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-radius: 0.375rem !important;
+}
+
+.cl-formButtonPrimary:hover {
+  background-color: #be123c !important;
+}
+
+.cl-footerActionText {
+  color: #94a3b8 !important;
+}
+
+.cl-footerActionLink {
+  color: #e11d48 !important;
+  font-weight: 600 !important;
+}
+
+.cl-footerActionLink:hover {
+  color: #fb7185 !important;
+}
+
+.cl-footer {
+  background: transparent !important;
+  border-top: 1px solid #1e2738 !important;
+}
+
+.cl-internal-b3fm6y,
+.cl-internal-4xka3e {
+  color: #94a3b8 !important;
+}
