@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatPaiseToRupees } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export interface PlanItem {
@@ -27,10 +28,6 @@ export function PlanCard({ plan, ctaText = "Select plan", ctaHref }: PlanCardPro
   const discountPaise = Math.round((grossTotalPaise * plan.discountPercentage) / 100);
   const finalTotalPaise = Math.max(0, grossTotalPaise - discountPaise);
   const effectiveMonthlyPaise = Math.round(finalTotalPaise / plan.durationMonths);
-
-  const effectiveMonthlyRupees = Math.round(effectiveMonthlyPaise / 100).toLocaleString("en-IN");
-  const totalRupees = Math.round(finalTotalPaise / 100).toLocaleString("en-IN");
-  const grossRupees = Math.round(grossTotalPaise / 100).toLocaleString("en-IN");
 
   const destination = ctaHref || `/checkout/${plan.id}`;
 
@@ -68,7 +65,7 @@ export function PlanCard({ plan, ctaText = "Select plan", ctaHref }: PlanCardPro
           <div className="pt-2">
             <div className="flex items-baseline gap-1.5">
               <span className="text-4xl font-extrabold font-display tracking-tight text-foreground">
-                ₹{effectiveMonthlyRupees}
+                {formatPaiseToRupees(effectiveMonthlyPaise)}
               </span>
               <span className="text-sm text-muted-foreground">/ month</span>
             </div>
@@ -78,10 +75,10 @@ export function PlanCard({ plan, ctaText = "Select plan", ctaHref }: PlanCardPro
                 <span>Billed monthly</span>
               ) : (
                 <span>
-                  ₹{totalRupees} total for {plan.durationMonths} months
+                  {formatPaiseToRupees(finalTotalPaise)} total for {plan.durationMonths} months
                   {plan.discountPercentage > 0 && (
                     <span className="line-through text-muted-foreground/70 ml-1.5">
-                      ₹{grossRupees}
+                      {formatPaiseToRupees(grossTotalPaise)}
                     </span>
                   )}
                 </span>

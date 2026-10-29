@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { objectIdSchema } from "./common";
 
 export const createCouponSchema = z
   .object({
@@ -70,7 +71,7 @@ export const updateCouponSchema = z.object({
 
 export const validateCouponSchema = z.object({
   code: z.string().min(1, "Coupon code is required").transform((v) => v.toUpperCase().trim()),
-  planId: z.string().min(1, "Plan ID is required"),
+  planId: objectIdSchema,
 });
 
 export type CreateCouponInput = z.infer<typeof createCouponSchema>;

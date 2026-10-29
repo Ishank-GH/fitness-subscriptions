@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
-
-export type UserRole = "ADMIN" | "USER";
-export type SubscriptionStatus = "ACTIVE" | "PARTIAL" | "EXPIRED" | "NONE";
+import { UserRole, SubscriptionStatus } from "@/types";
+import { deriveSubscriptionStatus, isExpiringSoon } from "@/lib/subscription-status";
 
 export interface IUserSubscription {
   planId: Types.ObjectId;
@@ -93,43 +92,19 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-/**
- * Derives subscription status dynamically at read time.
- * Eliminates stale state bugs caused by stored statuses.
- */
 UserSchema.virtual("derivedStatus").get(function (this: IUser): SubscriptionStatus {
-  if (!this.subscription || !this.subscription.endDate) {
-    return "NONE";
-  }
-
-  const now = new Date();
-  if (now > new Date(this.subscription.endDate)) {
-    return "EXPIRED";
-  }
-
-  if (this.subscription.balanceDuePaise > 0) {
-    return "PARTIAL";
-  }
-
-  return "ACTIVE";
+  return deriveSubscriptionStatus(
+    this.subscription?.endDate,
+    this.subscription?.balanceDuePaise
+  );
 });
 
-/**
- * 3-day expiry warning indicator derived from endDate.
- */
 UserSchema.virtual("isExpiringSoon").get(function (this: IUser): boolean {
-  if (!this.subscription || !this.subscription.endDate) {
-    return false;
-  }
-
-  const now = Date.now();
-  const end = new Date(this.subscription.endDate).getTime();
-  const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
-
-  // Active or Partial and ending within 3 days
-  return end > now && end - now <= threeDaysMs;
+  return isExpiringSoon(
+    this.subscription?.endDate,
+    this.subscription?.balanceDuePaise
+  );
 });
 
 export const User: Model<IUser> =
   mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
-

@@ -3,8 +3,7 @@ import { ArrowRight, Dumbbell, Calendar, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PlanCard, PlanItem } from "@/components/plan-card";
 
-// Sample plan data for public marketing display. This will be replaced
-// by live data from MongoDB and computed via the server pricing engine in later phases.
+// Fallback plan data for marketing display before MongoDB seed is applied.
 const SAMPLE_PLANS: PlanItem[] = [
   {
     id: "plan-1m",

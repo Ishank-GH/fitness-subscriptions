@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { objectIdSchema } from "./common";
 
 export const createSubscriptionSchema = z.object({
-  planId: z.string().min(1, "Plan ID is required"),
+  planId: objectIdSchema,
   couponCode: z
     .string()
     .trim()
@@ -11,4 +12,3 @@ export const createSubscriptionSchema = z.object({
 });
 
 export type CreateSubscriptionInput = z.infer<typeof createSubscriptionSchema>;
-

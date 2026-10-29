@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
-
-export type PaymentStatus = "COMPLETED" | "PARTIAL" | "PENDING";
+import { PaymentStatus } from "@/types";
 
 export interface IPlanSnapshot {
   name: string;
@@ -179,4 +178,3 @@ const TransactionSchema = new Schema<ITransaction>(
 export const Transaction: Model<ITransaction> =
   mongoose.models.Transaction ||
   mongoose.model<ITransaction>("Transaction", TransactionSchema);
-

@@ -1,13 +1,28 @@
 import { z } from "zod";
+import { objectIdSchema } from "./common";
 
-export const createPaymentSchema = z.object({
-  transactionId: z.string().min(1, "Transaction ID is required"),
-  paymentChoice: z.enum(["FULL", "PARTIAL"]),
-  amountPaise: z
-    .number()
-    .int("Payment amount must be an integer (in paise)")
-    .min(1, "Payment amount must be greater than zero"),
-});
+export const createPaymentSchema = z
+  .object({
+    transactionId: objectIdSchema,
+    paymentChoice: z.enum(["FULL", "PARTIAL"]),
+    amountPaise: z
+      .number()
+      .int("Payment amount must be an integer (in paise)")
+      .min(1, "Payment amount must be greater than zero")
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.paymentChoice === "PARTIAL") {
+        return typeof data.amountPaise === "number" && data.amountPaise > 0;
+      }
+      return true;
+    },
+    {
+      message: "Payment amount is required when selecting partial payment",
+      path: ["amountPaise"],
+    }
+  );
 
 export const adminOverrideSchema = z.object({
   overrideNote: z

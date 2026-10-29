@@ -2,8 +2,9 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 
 /**
  * Clerk modern proxy handler.
- * Auth and role-based protection are enforced directly within layout shells
- * and API route handlers (resource-based auth checks) to eliminate path-matching divergence.
+ * Following Clerk Core 3 / v7 recommendations, authentication and role-based
+ * access controls are enforced at the resource level in layouts and route handlers
+ * (via @/lib/auth) rather than deprecated path-matching middleware.
  */
 export default clerkMiddleware();
 

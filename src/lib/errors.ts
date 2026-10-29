@@ -58,7 +58,7 @@ export function conflict(
 }
 
 /**
- * Normalizes Zod validation errors into a field -> string[] dictionary.
+ * Normalizes Zod validation issues into field-specific error lists.
  */
 export function formatZodError(error: ZodError): Record<string, string[]> {
   const formatted: Record<string, string[]> = {};
@@ -73,7 +73,8 @@ export function formatZodError(error: ZodError): Record<string, string[]> {
 }
 
 /**
- * Consistent error response handler for API routes.
+ * Maps application and database errors into a consistent response envelope.
+ * Uncaught internal errors are logged server-side and masked from clients.
  */
 export function handleApiError(error: unknown): NextResponse<ApiResponse<never>> {
   if (error instanceof AppError) {
@@ -104,15 +105,51 @@ export function handleApiError(error: unknown): NextResponse<ApiResponse<never>>
     );
   }
 
-  const message =
-    error instanceof Error ? error.message : "An unexpected server error occurred";
+  // Handle Mongoose invalid ObjectId / CastError
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    (error as { name?: string }).name === "CastError"
+  ) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: "INVALID_IDENTIFIER",
+          message: "Invalid resource identifier format",
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  // Handle MongoDB duplicate key error (code 11000)
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    (error as { code?: number }).code === 11000
+  ) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: "DUPLICATE_ENTRY",
+          message: "A resource with this unique value already exists",
+        },
+      },
+      { status: 409 }
+    );
+  }
+
+  // Log unexpected errors server-side without leaking internals to clients
+  console.error("[INTERNAL_SERVER_ERROR]", error);
 
   return NextResponse.json(
     {
       success: false,
       error: {
         code: "INTERNAL_SERVER_ERROR",
-        message,
+        message: "An internal server error occurred. Please try again later.",
       },
     },
     { status: 500 }
@@ -120,7 +157,7 @@ export function handleApiError(error: unknown): NextResponse<ApiResponse<never>>
 }
 
 /**
- * Standard success response generator for API routes.
+ * Standard success response wrapper.
  */
 export function apiSuccess<T>(data: T, status: number = 200): NextResponse<ApiResponse<T>> {
   return NextResponse.json(
@@ -131,4 +168,3 @@ export function apiSuccess<T>(data: T, status: number = 200): NextResponse<ApiRe
     { status }
   );
 }
-
