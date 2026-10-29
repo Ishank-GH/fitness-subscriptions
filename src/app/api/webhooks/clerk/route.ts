@@ -76,19 +76,29 @@ export async function POST(req: NextRequest) {
   }
 
   // Verify the signature
-  let event: ClerkWebhookEvent;
   try {
     const wh = new Webhook(secret);
-    event = wh.verify(body, {
+    wh.verify(body, {
       "svix-id": svixId,
       "svix-timestamp": svixTimestamp,
       "svix-signature": svixSignature,
-    }) as unknown as ClerkWebhookEvent;
+    });
   } catch (err) {
     console.error("[Clerk Webhook] Signature verification failed:", err);
     return NextResponse.json(
       { error: "Invalid webhook signature" },
       { status: 401 }
+    );
+  }
+
+  let event: ClerkWebhookEvent;
+  try {
+    event = JSON.parse(body) as ClerkWebhookEvent;
+  } catch (err) {
+    console.error("[Clerk Webhook] Failed to parse payload:", err);
+    return NextResponse.json(
+      { error: "Invalid JSON payload" },
+      { status: 400 }
     );
   }
 

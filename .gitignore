@@ -3,6 +3,8 @@
 /.pnp
 .pnp.js
 
+plan*.txt 
+
 # testing
 /coverage
 
