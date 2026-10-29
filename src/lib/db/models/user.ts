@@ -1,6 +1,8 @@
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
 import { UserRole, SubscriptionStatus } from "@/types";
 import { deriveSubscriptionStatus, isExpiringSoon } from "@/lib/subscription-status";
+// Ensure referenced schema is registered for populate queries
+import "./subscription-plan";
 
 export interface IUserSubscription {
   planId: Types.ObjectId;

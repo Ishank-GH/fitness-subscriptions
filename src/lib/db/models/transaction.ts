@@ -1,5 +1,8 @@
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
 import { PaymentStatus } from "@/types";
+// Ensure referenced schemas are registered for populate queries
+import "./user";
+import "./subscription-plan";
 
 export interface IPlanSnapshot {
   name: string;

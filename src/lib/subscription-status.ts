@@ -46,3 +46,12 @@ export function isExpiringSoon(
   return end > now && end - now <= threeDaysMs;
 }
 
+/**
+ * Calculates remaining days until subscription expires (floored at 0).
+ */
+export function calculateDaysRemaining(endDate?: Date | string | null): number {
+  if (!endDate) return 0;
+  const end = new Date(endDate).getTime();
+  const now = Date.now();
+  return Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+}
