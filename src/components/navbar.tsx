@@ -81,10 +81,15 @@ export function Navbar() {
               />
             </div>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <Link href="/sign-in">
                 <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                   Sign In
+                </Button>
+              </Link>
+              <Link href="/sign-up">
+                <Button variant="outline" size="sm" className="font-medium">
+                  Sign Up
                 </Button>
               </Link>
               <Link href="/plans">
@@ -140,6 +145,11 @@ export function Navbar() {
                   <Link href="/sign-in" className="w-full">
                     <Button variant="outline" className="w-full justify-center">
                       Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/sign-up" className="w-full">
+                    <Button variant="outline" className="w-full justify-center">
+                      Sign Up
                     </Button>
                   </Link>
                   <Link href="/plans" className="w-full">
