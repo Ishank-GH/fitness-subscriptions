@@ -22,12 +22,20 @@ import {
 } from "@/lib/subscription-status";
 import { formatDate, formatPaiseToRupees, formatDurationMonths } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CheckoutSuccessAlert } from "@/components/checkout-success-alert";
 
 export const dynamic = "force-dynamic";
 
-export default async function MemberDashboardPage() {
+interface MemberDashboardPageProps {
+  searchParams: Promise<{ checkout?: string }>;
+}
+
+export default async function MemberDashboardPage({
+  searchParams,
+}: MemberDashboardPageProps) {
+  const { checkout } = await searchParams;
   const session = await requireUser();
   await connectToDatabase();
 
@@ -84,6 +92,14 @@ export default async function MemberDashboardPage() {
 
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
+      {/* Checkout Success Banner */}
+      {checkout === "success" && (
+        <CheckoutSuccessAlert
+          status={status}
+          balanceDuePaise={subscription?.balanceDuePaise}
+        />
+      )}
+
       {/* 3-Day Expiry Urgent Banner */}
       {expiringSoon && (
         <div className="rounded border border-amber-500/40 bg-amber-500/10 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
