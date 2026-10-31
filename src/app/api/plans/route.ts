@@ -8,10 +8,7 @@ import { apiSuccess, handleApiError, conflict } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Public endpoint to fetch all active subscription plans with
- * pre-calculated pricing breakdowns.
- */
+// Public REST surface for plans; application pages query the database directly.
 export async function GET() {
   try {
     await connectToDatabase();

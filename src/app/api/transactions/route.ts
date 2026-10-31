@@ -6,10 +6,7 @@ import { apiSuccess, handleApiError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Retrieves all billing transactions and invoice snapshots for the authenticated user,
- * ordered chronologically with the latest first.
- */
+// Public REST surface for user transactions; application pages query the database directly.
 export async function GET() {
   try {
     const session = await requireApiUser();
