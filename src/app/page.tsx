@@ -1,13 +1,47 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { getAuthSession } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { SubscriptionPlan } from "@/lib/db/models/subscription-plan";
+import { User } from "@/lib/db/models/user";
+import { deriveSubscriptionStatus } from "@/lib/subscription-status";
 import { calculatePricing } from "@/lib/pricing/engine";
-import { formatPaiseToRupees, formatDurationMonths } from "@/lib/format";
-import { HeroSection } from "@/components/hero-section";
-import { ClaimsIndexList } from "@/components/claims-index-list";
+import { formatDurationMonths } from "@/lib/format";
+import {
+  PlanSelector,
+  SerializedPlanWithPricing,
+} from "@/components/plan-selector";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Membership plans | Ironvale",
+  description:
+    "Choose your training block. Pay in full or pay half upfront on multi-month plans.",
+};
+
+const DEFAULT_FEATURES: Record<number, string[]> = {
+  1: [
+    "Full facility access (05:30 – 22:00, 7 days)",
+    "Competition barbells and calibrated steel plates",
+    "Finnish cedar sauna and cold plunge access",
+    "No initiation fees or lock-in contracts",
+  ],
+  3: [
+    "All 1-Month Foundation benefits",
+    "10% commitment discount",
+    "Two-part payment: 50% upfront, rest before plan ends",
+    "Bi-weekly platform technique review",
+    "Priority platform reservation during peak hours",
+  ],
+  12: [
+    "All 3-Month Progression benefits",
+    "20% annual athlete discount",
+    "Two-part payment: 50% upfront, rest before plan ends",
+    "Dedicated gear and kit locker included",
+    "Monthly 1-on-1 programming review",
+  ],
+};
 
 const FALLBACK_PLANS = [
   {
@@ -36,7 +70,7 @@ const FALLBACK_PLANS = [
   },
 ];
 
-export default async function HomePage() {
+export default async function PlansPage() {
   await connectToDatabase();
 
   const dbPlans = await SubscriptionPlan.find({ isActive: true })
@@ -55,111 +89,84 @@ export default async function HomePage() {
         }))
       : FALLBACK_PLANS;
 
-  const plansWithPricing = plansSource.map((p) => {
+  // Run calculatePricing strictly on the server; pass plain serialized numbers
+  const serializedPlans: SerializedPlanWithPricing[] = plansSource.map((plan) => {
     const pricing = calculatePricing({
       plan: {
-        baseMonthlyPricePaise: p.baseMonthlyPricePaise,
-        durationMonths: p.durationMonths,
-        discountPercentage: p.discountPercentage,
-        allowPartialPayment: p.allowPartialPayment,
+        baseMonthlyPricePaise: plan.baseMonthlyPricePaise,
+        durationMonths: plan.durationMonths,
+        discountPercentage: plan.discountPercentage,
+        allowPartialPayment: plan.allowPartialPayment,
       },
     });
 
     return {
-      id: p.id,
-      name: p.name,
-      durationText: formatDurationMonths(p.durationMonths),
-      discountPercentage: p.discountPercentage,
-      allowPartialPayment: p.allowPartialPayment,
-      effectiveMonthly: formatPaiseToRupees(pricing.effectiveMonthlyPaise),
-      total: formatPaiseToRupees(pricing.totalPaise),
+      id: plan.id,
+      name: plan.name,
+      durationMonths: plan.durationMonths,
+      durationText: formatDurationMonths(plan.durationMonths),
+      baseMonthlyPricePaise: plan.baseMonthlyPricePaise,
+      discountPercentage: plan.discountPercentage,
+      allowPartialPayment: plan.allowPartialPayment,
+      features:
+        DEFAULT_FEATURES[plan.durationMonths] || [
+          "Full facility access during gym operating hours",
+          "Competition barbells and Olympic lifting platforms",
+          "Locker room and cold plunge amenities",
+        ],
+      pricing: {
+        grossPaise: pricing.grossPaise,
+        commitmentDiscountPaise: pricing.commitmentDiscountPaise,
+        couponDiscountPaise: pricing.couponDiscountPaise,
+        totalPaise: pricing.totalPaise,
+        effectiveMonthlyPaise: pricing.effectiveMonthlyPaise,
+        minimumUpfrontPaise: pricing.minimumUpfrontPaise,
+        remainderPaise: pricing.remainderPaise,
+      },
     };
   });
 
+  // Verify whether the signed-in user already holds an active training block
+  const session = await getAuthSession();
+  let hasActiveSubscription = false;
+
+  if (session) {
+    const user = await User.findOne({ clerkId: session.userId }).lean();
+    if (user?.subscription?.endDate) {
+      const status = deriveSubscriptionStatus(
+        user.subscription.endDate,
+        user.subscription.balanceDuePaise
+      );
+      if (status === "ACTIVE" || status === "PARTIAL") {
+        hasActiveSubscription = true;
+      }
+    }
+  }
+
   return (
-    <div className="flex flex-col bg-background">
-      {/* Hero: kinetic headline and lift strip */}
-      <HeroSection />
+    <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12">
+      {/* Header */}
+      <div className="max-w-2xl space-y-3">
+        <Link
+          href="/"
+          className="font-mono text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Home
+        </Link>
+        <h1 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl tracking-tight text-foreground">
+          Membership plans
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+          Transparent rates in Indian Rupees with zero initiation fees. Pay in full or choose a 50% upfront installment on multi-month training blocks.
+        </p>
+      </div>
 
-      {/* Claims Index List */}
-      <section className="border-b border-border py-16 md:py-24 bg-background">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
-          <div className="max-w-2xl space-y-2">
-            <h2 className="font-display font-bold text-3xl sm:text-4xl tracking-tight text-foreground">
-              Built for real training
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-              No commercial gym noise or lock-in contracts. A barbell facility designed around calibrated strength.
-            </p>
-          </div>
-
-          <ClaimsIndexList />
-        </div>
-      </section>
-
-      {/* Compact Plan Index */}
-      <section className="py-16 md:py-24 bg-background">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div className="max-w-2xl space-y-2">
-              <h2 className="font-display font-bold text-3xl sm:text-4xl tracking-tight text-foreground">
-                Training blocks
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                Every membership includes unrestricted access to platforms, racks, turf, and recovery.
-              </p>
-            </div>
-            <Link
-              href="/plans"
-              className="font-mono text-xs text-foreground hover:underline inline-flex items-center gap-1 shrink-0"
-            >
-              Compare plan details
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-
-          {/* Plan index rows */}
-          <div className="w-full divide-y divide-border border-y border-border">
-            {plansWithPricing.map((plan) => (
-              <Link
-                key={plan.id}
-                href="/plans"
-                className="group flex flex-col sm:flex-row sm:items-center justify-between py-6 px-3 sm:px-4 -mx-3 sm:-mx-4 hover:bg-card transition-colors duration-200 gap-4"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-display font-bold text-xl sm:text-2xl text-foreground tracking-tight">
-                      {plan.name}
-                    </h3>
-                    {plan.discountPercentage > 0 && (
-                      <span className="font-mono text-xs px-2 py-0.5 rounded-sm border border-border bg-background text-foreground font-medium">
-                        {plan.discountPercentage}% off
-                      </span>
-                    )}
-                  </div>
-                  <p className="font-mono text-xs text-muted-foreground">
-                    {plan.durationText}
-                    {plan.allowPartialPayment && " · 50% upfront available"}
-                  </p>
-                </div>
-
-                <div className="flex items-baseline sm:items-center justify-between sm:justify-end gap-6 sm:gap-8 font-mono">
-                  <div className="text-left sm:text-right">
-                    <span className="text-base sm:text-lg font-semibold text-foreground block tabular-nums">
-                      {plan.effectiveMonthly}
-                      <span className="text-xs text-muted-foreground font-normal"> / mo</span>
-                    </span>
-                    <span className="text-xs text-muted-foreground block tabular-nums">
-                      {plan.total} total
-                    </span>
-                  </div>
-                  <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Interactive Plan Selector */}
+      <PlanSelector
+        plans={serializedPlans}
+        hasActiveSubscription={hasActiveSubscription}
+      />
     </div>
   );
 }
