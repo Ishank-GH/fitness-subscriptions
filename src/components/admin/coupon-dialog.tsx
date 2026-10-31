@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { X, Loader2, AlertCircle, Percent, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { paiseToRupees, rupeesToPaise } from "@/lib/format";
@@ -26,146 +25,54 @@ interface CouponDialogProps {
   onSaved: () => void;
 }
 
-export function CouponDialog({
-  isOpen,
-  onClose,
-  couponToEdit,
-  onSaved,
-}: CouponDialogProps) {
+export function CouponDialog({ isOpen, onClose, couponToEdit, onSaved }: CouponDialogProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg rounded border border-border bg-card p-6 shadow-2xl space-y-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/95 animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg rounded-sm border border-border bg-card p-6 shadow-none space-y-6">
         <div className="flex items-center justify-between border-b border-border/50 pb-3">
-          <h2 className="text-lg font-bold text-foreground">
+          <h2 className="text-lg font-bold font-display text-foreground">
             {couponToEdit ? `Edit ${couponToEdit.code}` : "New coupon"}
           </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
         </div>
-
-        <CouponForm
-          key={couponToEdit?.id ?? "create"}
-          couponToEdit={couponToEdit}
-          onClose={onClose}
-          onSaved={onSaved}
-        />
+        <CouponForm key={couponToEdit?.id ?? "create"} couponToEdit={couponToEdit} onClose={onClose} onSaved={onSaved} />
       </div>
     </div>
   );
 }
 
-function CouponForm({
-  couponToEdit,
-  onClose,
-  onSaved,
-}: {
-  couponToEdit?: SerializedAdminCoupon | null;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
+function CouponForm({ couponToEdit, onClose, onSaved }: { couponToEdit?: SerializedAdminCoupon | null; onClose: () => void; onSaved: () => void; }) {
   const isEditing = Boolean(couponToEdit);
-
-  const defaultValidUntil = React.useMemo(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 30);
-    return d.toISOString().split("T")[0];
-  }, []);
-
+  const defaultDate = React.useMemo(() => { const d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().split("T")[0]; }, []);
   const [code, setCode] = React.useState(couponToEdit?.code ?? "");
-  const [type, setType] = React.useState<"FLAT" | "PERCENTAGE">(
-    couponToEdit?.type ?? "PERCENTAGE"
-  );
-  const [discountValue, setDiscountValue] = React.useState<string | number>(
-    couponToEdit
-      ? couponToEdit.type === "FLAT"
-        ? paiseToRupees(couponToEdit.flatAmountPaise)
-        : couponToEdit.percentage
-      : 10
-  );
-  const [hasMaxRedemptions, setHasMaxRedemptions] = React.useState(
-    couponToEdit ? couponToEdit.maxRedemptions !== null : false
-  );
-  const [maxRedemptions, setMaxRedemptions] = React.useState<string | number>(
-    couponToEdit?.maxRedemptions ?? 100
-  );
-  const [validUntil, setValidUntil] = React.useState(
-    couponToEdit ? couponToEdit.validUntil.split("T")[0] : defaultValidUntil
-  );
+  const [type, setType] = React.useState<"FLAT" | "PERCENTAGE">(couponToEdit?.type ?? "PERCENTAGE");
+  const [discountValue, setDiscountValue] = React.useState<string | number>(couponToEdit ? (couponToEdit.type === "FLAT" ? paiseToRupees(couponToEdit.flatAmountPaise) : couponToEdit.percentage) : 10);
+  const [hasMax, setHasMax] = React.useState(couponToEdit ? couponToEdit.maxRedemptions !== null : false);
+  const [maxRedemptions, setMaxRedemptions] = React.useState<string | number>(couponToEdit?.maxRedemptions ?? 100);
+  const [validUntil, setValidUntil] = React.useState(couponToEdit ? couponToEdit.validUntil.split("T")[0] : defaultDate);
   const [isActive, setIsActive] = React.useState(couponToEdit?.isActive ?? true);
-
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMessage(null);
-
-    const cleanCode = code.trim().toUpperCase();
-    if (cleanCode.length < 3 || cleanCode.length > 20) {
-      setErrorMessage("Coupon code must be between 3 and 20 alphanumeric characters.");
-      return;
-    }
-
-    const numValue = Number(discountValue);
-    if (isNaN(numValue) || numValue <= 0) {
-      setErrorMessage("Discount value must be greater than zero.");
-      return;
-    }
-
-    if (type === "PERCENTAGE" && numValue > 100) {
-      setErrorMessage("Percentage discount cannot exceed 100%.");
-      return;
-    }
-
-    let parsedMax: number | null = null;
-    if (hasMaxRedemptions) {
-      parsedMax = parseInt(String(maxRedemptions), 10);
-      if (isNaN(parsedMax) || parsedMax < 1) {
-        setErrorMessage("Max redemptions must be at least 1.");
-        return;
-      }
-    }
-
-    if (!validUntil) {
-      setErrorMessage("Expiration date is required.");
-      return;
-    }
-
     setIsSubmitting(true);
-
     try {
       const payload = {
-        code: cleanCode,
+        code: code.trim().toUpperCase(),
         type,
-        flatAmountPaise: type === "FLAT" ? rupeesToPaise(numValue) : 0,
-        percentage: type === "PERCENTAGE" ? numValue : 0,
-        maxRedemptions: parsedMax,
+        flatAmountPaise: type === "FLAT" ? rupeesToPaise(Number(discountValue)) : 0,
+        percentage: type === "PERCENTAGE" ? Number(discountValue) : 0,
+        maxRedemptions: hasMax ? Number(maxRedemptions) : null,
         validUntil: new Date(`${validUntil}T23:59:59.999Z`),
         ...(isEditing ? { isActive } : {}),
       };
-
       const url = isEditing ? `/api/coupons/${couponToEdit!.id}` : "/api/coupons";
-      const method = isEditing ? "PUT" : "POST";
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
+      const res = await fetch(url, { method: isEditing ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error?.message || "Failed to save coupon.");
-      }
-
+      if (!res.ok || !data.success) throw new Error(data.error?.message || "Failed to save coupon.");
       onSaved();
       onClose();
     } catch (err: unknown) {
@@ -177,185 +84,32 @@ function CouponForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Code */}
-      <div className="space-y-1.5">
-        <label htmlFor="couponCode" className="text-xs font-medium text-foreground">
-          Coupon code
-        </label>
-        <Input
-          id="couponCode"
-          type="text"
-          required
-          placeholder="e.g. SUMMER25"
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-          className="font-mono uppercase text-xs sm:text-sm font-bold tracking-wider placeholder:normal-case placeholder:font-normal h-10"
-        />
+      <div className="space-y-1.5 text-xs font-mono">
+        <label>Coupon code</label>
+        <Input required value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} className="uppercase" />
       </div>
-
-      {/* Row 1: Type & Value */}
-      <div className="grid grid-cols-2 gap-4 items-start">
+      <div className="grid grid-cols-2 gap-4 text-xs font-mono">
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between h-5">
-            <span className="text-xs font-medium text-foreground">
-              Discount type
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-2 h-10">
-            <button
-              type="button"
-              onClick={() => setType("PERCENTAGE")}
-              className={`h-10 rounded border px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
-                type === "PERCENTAGE"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40"
-              }`}
-            >
-              <Percent className="h-3.5 w-3.5" />
-              Percent
-            </button>
-            <button
-              type="button"
-              onClick={() => setType("FLAT")}
-              className={`h-10 rounded border px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
-                type === "FLAT"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40"
-              }`}
-            >
-              <DollarSign className="h-3.5 w-3.5" />
-              Flat (₹)
-            </button>
+          <label>Type</label>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => setType("PERCENTAGE")} className={`px-2 py-1.5 border rounded-sm w-full ${type === "PERCENTAGE" ? "bg-foreground text-background" : "bg-transparent border-border text-foreground"}`}>%</button>
+            <button type="button" onClick={() => setType("FLAT")} className={`px-2 py-1.5 border rounded-sm w-full ${type === "FLAT" ? "bg-foreground text-background" : "bg-transparent border-border text-foreground"}`}>Flat ₹</button>
           </div>
         </div>
-
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between h-5">
-            <label htmlFor="discountVal" className="text-xs font-medium text-foreground">
-              {type === "PERCENTAGE" ? "Discount percentage" : "Flat amount"}
-            </label>
-            <span className="text-[10px] font-mono text-muted-foreground">
-              {type === "PERCENTAGE" ? "% rate" : "INR (₹)"}
-            </span>
-          </div>
-          <div className="relative">
-            {type === "FLAT" && (
-              <span className="absolute left-3 top-2.5 text-xs text-muted-foreground font-semibold pointer-events-none">
-                ₹
-              </span>
-            )}
-            <Input
-              id="discountVal"
-              type="number"
-              min="1"
-              max={type === "PERCENTAGE" ? "100" : undefined}
-              step={type === "FLAT" ? "50" : "1"}
-              required
-              value={discountValue}
-              onChange={(e) => setDiscountValue(e.target.value)}
-              className={`h-10 font-mono text-xs sm:text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                type === "FLAT" ? "pl-7" : "pr-7"
-              }`}
-            />
-            {type === "PERCENTAGE" && (
-              <span className="absolute right-3 top-2.5 text-xs text-muted-foreground font-semibold pointer-events-none">
-                %
-              </span>
-            )}
-          </div>
-        </div>
+        <div className="space-y-1.5"><label>Value</label><Input type="number" required value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} /></div>
       </div>
-
-      {/* Row 2: Valid Until & Max Redemptions */}
-      <div className="grid grid-cols-2 gap-4 items-start">
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between h-5">
-            <label htmlFor="validUntil" className="text-xs font-medium text-foreground">
-              Expiry date
-            </label>
-          </div>
-          <Input
-            id="validUntil"
-            type="date"
-            required
-            value={validUntil}
-            onChange={(e) => setValidUntil(e.target.value)}
-            className="h-10 font-mono text-xs sm:text-sm"
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between h-5">
-            <label htmlFor="maxUses" className="text-xs font-medium text-foreground">
-              Redemption cap
-            </label>
-            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-              {hasMaxRedemptions ? "Limited" : "Unlimited"}
-            </span>
-          </div>
-          <Input
-            id="maxUses"
-            type="number"
-            min="1"
-            disabled={!hasMaxRedemptions}
-            value={hasMaxRedemptions ? maxRedemptions : ""}
-            placeholder="Unlimited"
-            onChange={(e) => setMaxRedemptions(e.target.value)}
-            className="h-10 font-mono text-xs sm:text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-40"
-          />
-        </div>
+      <div className="grid grid-cols-2 gap-4 text-xs font-mono">
+        <div className="space-y-1.5"><label>Expiry</label><Input type="date" required value={validUntil} onChange={(e) => setValidUntil(e.target.value)} /></div>
+        <div className="space-y-1.5"><label>Cap</label><Input type="number" disabled={!hasMax} value={hasMax ? maxRedemptions : ""} placeholder="∞" onChange={(e) => setMaxRedemptions(e.target.value)} /></div>
       </div>
-
-      <div className="space-y-2.5 pt-1">
-        <label className="flex items-center gap-2.5 text-xs text-foreground cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={hasMaxRedemptions}
-            onChange={(e) => setHasMaxRedemptions(e.target.checked)}
-            className="h-4 w-4 rounded border-border bg-background text-primary accent-primary"
-          />
-          <span>Limit total redemptions</span>
-        </label>
-
-        {isEditing && (
-          <label className="flex items-center gap-2.5 text-xs text-foreground cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={isActive}
-              onChange={(e) => setIsActive(e.target.checked)}
-              className="h-4 w-4 rounded border-border bg-background text-primary accent-primary"
-            />
-            <span>Active coupon (can be redeemed)</span>
-          </label>
-        )}
+      <div className="space-y-2 pt-2 text-xs font-mono flex flex-col gap-2">
+        <label className="flex items-center gap-2"><input type="checkbox" checked={hasMax} onChange={(e) => setHasMax(e.target.checked)} /> Limit redemptions</label>
+        {isEditing && <label className="flex items-center gap-2"><input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} /> Active</label>}
       </div>
-
-      {errorMessage && (
-        <div className="rounded border border-destructive/40 bg-destructive/10 p-2.5 text-xs text-destructive flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <span>{errorMessage}</span>
-        </div>
-      )}
-
-      <div className="flex items-center justify-end gap-3 pt-3 border-t border-border/50">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onClose}
-          disabled={isSubmitting}
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          size="sm"
-          disabled={isSubmitting || !code.trim()}
-          className="font-medium gap-1.5"
-        >
-          {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          {isEditing ? "Save changes" : "Create coupon"}
-        </Button>
+      {errorMessage && <div className="text-xs text-destructive font-mono border-t border-border pt-2">{errorMessage}</div>}
+      <div className="flex justify-end gap-3 pt-4 border-t border-border">
+        <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>Cancel</Button>
+        <Button type="submit" size="sm" disabled={isSubmitting || !code.trim()}>{isSubmitting ? "Saving..." : "Save"}</Button>
       </div>
     </form>
   );

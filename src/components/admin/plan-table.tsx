@@ -2,26 +2,12 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import {
-  Plus,
-  Edit2,
-  Archive,
-  RefreshCw,
-  CheckCircle2,
-  Clock,
-  Loader2,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { formatPaiseToRupees, formatDurationMonths } from "@/lib/format";
 import { PlanDialog, SerializedAdminPlan } from "@/components/admin/plan-dialog";
 
-export function PlanTable({
-  plans,
-}: {
-  plans: SerializedAdminPlan[];
-}) {
+export function PlanTable({ plans }: { plans: SerializedAdminPlan[] }) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [editingPlan, setEditingPlan] = React.useState<SerializedAdminPlan | null>(null);
@@ -39,17 +25,13 @@ export function PlanTable({
 
   async function handleToggleStatus(plan: SerializedAdminPlan) {
     setActionLoadingId(plan.id);
-
     try {
       const res = await fetch(`/api/plans/${plan.id}`, {
         method: plan.isActive ? "DELETE" : "PUT",
         headers: { "Content-Type": "application/json" },
         body: plan.isActive ? undefined : JSON.stringify({ isActive: true }),
       });
-
-      if (res.ok) {
-        router.refresh();
-      }
+      if (res.ok) router.refresh();
     } finally {
       setActionLoadingId(null);
     }
@@ -58,46 +40,38 @@ export function PlanTable({
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground">
-            Plans ({plans.length})
-          </h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Active and archived membership plans.
-          </p>
+        <div className="space-y-1">
+          <h2 className="text-xl font-bold font-display text-foreground">Plans ({plans.length})</h2>
+          <p className="text-sm text-muted-foreground">Active and archived membership plans.</p>
         </div>
-        <Button onClick={handleOpenCreate} size="sm" className="gap-2 font-medium shrink-0">
-          <Plus className="h-4 w-4" />
-          Add plan
+        <Button onClick={handleOpenCreate} size="sm" className="font-mono text-xs">
+          New plan
         </Button>
       </div>
 
       {plans.length === 0 ? (
         <EmptyState
           title="No plans found"
-          description="Create your first training plan to allow members to subscribe."
-          action={{
-            label: "Add plan",
-            onClick: handleOpenCreate,
-          }}
+          description="Create your first training plan."
+          action={{ label: "Add plan", onClick: handleOpenCreate }}
         />
       ) : (
-        <div className="rounded border border-border bg-card overflow-hidden">
+        <div className="rounded-sm border border-border bg-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-xs">
+            <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-border/60 bg-muted/30 text-muted-foreground font-mono text-[11px] text-left">
-                  <th className="py-3 px-4">Plan name</th>
-                  <th className="py-3 px-4">Duration</th>
-                  <th className="py-3 px-4">Base rate</th>
-                  <th className="py-3 px-4">Discount</th>
-                  <th className="py-3 px-4">Net price</th>
-                  <th className="py-3 px-4">Installments</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                <tr className="border-b border-border bg-background/50 text-muted-foreground font-mono text-xs">
+                  <th className="py-3 px-5 font-normal">Plan name</th>
+                  <th className="py-3 px-5 font-normal">Duration</th>
+                  <th className="py-3 px-5 font-normal">Base rate</th>
+                  <th className="py-3 px-5 font-normal">Discount</th>
+                  <th className="py-3 px-5 font-normal">Net price</th>
+                  <th className="py-3 px-5 font-normal">Installments</th>
+                  <th className="py-3 px-5 font-normal">Status</th>
+                  <th className="py-3 px-5 font-normal text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/40 font-mono">
+              <tbody className="divide-y divide-border font-mono text-xs">
                 {plans.map((p) => {
                   const gross = p.durationMonths * p.baseMonthlyPricePaise;
                   const discount = Math.floor((gross * p.discountPercentage) / 100);
@@ -105,83 +79,20 @@ export function PlanTable({
                   const isLoading = actionLoadingId === p.id;
 
                   return (
-                    <tr
-                      key={p.id}
-                      className={p.isActive ? "hover:bg-muted/20 transition-colors" : "opacity-60 bg-muted/10"}
-                    >
-                      <td className="py-3.5 px-4 font-sans font-medium text-foreground text-sm">
-                        {p.name}
-                      </td>
-                      <td className="py-3.5 px-4 text-muted-foreground">
-                        {formatDurationMonths(p.durationMonths)}
-                      </td>
-                      <td className="py-3.5 px-4 text-foreground">
-                        {formatPaiseToRupees(p.baseMonthlyPricePaise)} / mo
-                      </td>
-                      <td className="py-3.5 px-4">
-                        {p.discountPercentage > 0 ? (
-                          <span className="text-emerald-400 font-semibold">
-                            {p.discountPercentage}% OFF
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4 font-bold text-foreground">
-                        {formatPaiseToRupees(net)}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        {p.allowPartialPayment ? (
-                          <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-400 text-[10px] gap-1">
-                            <Clock className="h-2.5 w-2.5" />
-                            50% Split
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="border-border text-muted-foreground text-[10px]">
-                            Full only
-                          </Badge>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        {p.isActive ? (
-                          <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-emerald-400 text-[10px] gap-1">
-                            <CheckCircle2 className="h-2.5 w-2.5" />
-                            Active
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="border-muted text-muted-foreground text-[10px]">
-                            Archived
-                          </Badge>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleOpenEdit(p)}
-                            className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            disabled={isLoading}
-                            onClick={() => handleToggleStatus(p)}
-                            className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive"
-                            title={p.isActive ? "Archive plan" : "Restore plan"}
-                          >
-                            {isLoading ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : p.isActive ? (
-                              <Archive className="h-3.5 w-3.5" />
-                            ) : (
-                              <RefreshCw className="h-3.5 w-3.5" />
-                            )}
-                          </Button>
+                    <tr key={p.id} className={p.isActive ? "hover:bg-background/50" : "opacity-50"}>
+                      <td className="py-3.5 px-5 font-sans font-medium text-foreground">{p.name}</td>
+                      <td className="py-3.5 px-5 text-muted-foreground">{formatDurationMonths(p.durationMonths)}</td>
+                      <td className="py-3.5 px-5 text-foreground tabular-nums">{formatPaiseToRupees(p.baseMonthlyPricePaise)}</td>
+                      <td className="py-3.5 px-5 text-foreground">{p.discountPercentage > 0 ? `${p.discountPercentage}%` : "—"}</td>
+                      <td className="py-3.5 px-5 font-bold text-foreground tabular-nums">{formatPaiseToRupees(net)}</td>
+                      <td className="py-3.5 px-5 text-muted-foreground">{p.allowPartialPayment ? "50% Split" : "Full"}</td>
+                      <td className="py-3.5 px-5 text-foreground">{p.isActive ? "Active" : "Archived"}</td>
+                      <td className="py-3.5 px-5 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          <button onClick={() => handleOpenEdit(p)} className="text-muted-foreground hover:text-foreground">Edit</button>
+                          <button disabled={isLoading} onClick={() => handleToggleStatus(p)} className="text-muted-foreground hover:text-foreground">
+                            {isLoading ? "..." : p.isActive ? "Archive" : "Restore"}
+                          </button>
                         </div>
                       </td>
                     </tr>
