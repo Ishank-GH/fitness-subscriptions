@@ -27,17 +27,14 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand identity: sentence case grotesk with small mono subtitle */}
-        <Link href="/" className="flex items-baseline gap-2 group">
+        {/* Brand: "Ironvale" only */}
+        <Link href="/" className="flex items-center group">
           <span className="font-display font-extrabold text-xl tracking-tight text-foreground">
             Ironvale
           </span>
-          <span className="font-mono text-[11px] text-muted-foreground uppercase tracking-widest hidden sm:inline">
-            Barbell club
-          </span>
         </Link>
 
-        {/* Desktop links */}
+        {/* Desktop navigation */}
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
@@ -85,7 +82,7 @@ export function Navbar() {
               </Link>
               <Link href="/plans">
                 <Button size="sm" className="text-xs">
-                  Join club
+                  Join
                 </Button>
               </Link>
             </div>
@@ -107,9 +104,9 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile drawer: flat background, no blur, hairline border */}
+      {/* Mobile drawer on raised surface */}
       {mobileMenuOpen && (
-        <div className="border-b border-border bg-background px-4 py-6 md:hidden">
+        <div className="border-b border-border bg-card px-4 py-6 md:hidden">
           <nav className="flex flex-col gap-3">
             {navLinks.map((link) => (
               <Link
@@ -143,7 +140,7 @@ export function Navbar() {
                   </Link>
                   <Link href="/plans" className="w-full">
                     <Button className="w-full justify-center text-xs" size="sm">
-                      Join club
+                      Join
                     </Button>
                   </Link>
                 </>

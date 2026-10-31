@@ -25,9 +25,9 @@ const fontMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ironvale Strength & Conditioning",
+  title: "Ironvale",
   description:
-    "Barbell club, calibrated competition plates, and flexible membership installment plans.",
+    "Calibrated competition plates, power racks, and flexible membership installment plans.",
 };
 
 export default function RootLayout({

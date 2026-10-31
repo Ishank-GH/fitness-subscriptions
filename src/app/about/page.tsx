@@ -3,50 +3,44 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "About & Facility | Ironvale Strength & Conditioning",
+  title: "Facility | Ironvale",
   description:
-    "Learn about our mission, equipment, operating hours, and how memberships work at Ironvale.",
+    "Calibrated equipment, operating hours, and membership terms at Ironvale.",
 };
 
 export default function AboutPage() {
   return (
     <div className="flex flex-col">
-      {/* Header */}
       <section className="border-b border-border py-16 md:py-20 bg-background">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-4">
-          <span className="text-xs font-mono font-semibold uppercase tracking-wider text-primary">
-            Mission & facility
-          </span>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-            Built for real strength
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground font-display">
+            Built for heavy lifting
           </h1>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl leading-relaxed">
-            Ironvale was founded on a simple premise: a dedicated strength club where athletes, lifters, and anyone serious about their training can train with calibrated equipment without commercial gym friction.
+            Ironvale is a dedicated barbell facility where members train with calibrated equipment without commercial gym friction.
           </p>
         </div>
       </section>
 
-      {/* Main Content Sections */}
-      <section className="border-b border-border py-16 bg-card/30">
+      <section className="border-b border-border py-16 bg-card">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Opening hours */}
-            <div className="rounded border border-border bg-card p-6 md:p-8 space-y-4">
-              <h2 className="text-xl font-bold text-foreground">
+            <div className="rounded-sm border border-border bg-background p-6 md:p-8 space-y-4">
+              <h2 className="text-xl font-bold text-foreground font-display">
                 Opening hours
               </h2>
-              <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="space-y-2 text-sm text-muted-foreground font-mono">
                 <div className="flex justify-between py-1.5 border-b border-border/50">
                   <span>Monday – Friday</span>
-                  <span className="font-mono text-foreground font-medium">5:30 AM – 10:00 PM</span>
+                  <span className="text-foreground font-medium">05:30 – 22:00</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-border/50">
                   <span>Saturday</span>
-                  <span className="font-mono text-foreground font-medium">6:00 AM – 9:00 PM</span>
+                  <span className="text-foreground font-medium">06:00 – 21:00</span>
                 </div>
                 <div className="flex justify-between py-1.5">
                   <span>Sunday</span>
-                  <span className="font-mono text-foreground font-medium">7:00 AM – 8:00 PM</span>
+                  <span className="text-foreground font-medium">07:00 – 20:00</span>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed pt-2">
@@ -54,52 +48,49 @@ export default function AboutPage() {
               </p>
             </div>
 
-            {/* What is in the facility */}
-            <div className="rounded border border-border bg-card p-6 md:p-8 space-y-4">
-              <h2 className="text-xl font-bold text-foreground">
-                What is in the facility
+            <div className="rounded-sm border border-border bg-background p-6 md:p-8 space-y-4">
+              <h2 className="text-xl font-bold text-foreground font-display">
+                Facility specs
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                8 flush Olympic lifting platforms with hardwood inserts, 12 heavy-duty power cages with safety arms, calibrated steel competition plates, standard 20kg and 15kg bars, specialized barbells, machined dumbbells up to 60kg, a 30m turf sprint lane, conditioning ergometers, Finnish dry cedar sauna, and cold plunge.
+                8 flush Olympic lifting platforms with hardwood inserts, 12 heavy-duty power cages with safety arms, calibrated steel competition plates, standard 20kg and 15kg bars, specialized barbells, machined dumbbells up to 60kg, a 30m turf sprint lane, conditioning ergometers, cedar sauna, and cold plunge.
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Chalk, lifting belts, and resistance bands are fully stocked and available for all members.
+                Chalk, belts, and bands are stocked for all members.
               </p>
             </div>
 
-            {/* How membership works */}
-            <div className="rounded border border-border bg-card p-6 md:p-8 space-y-4">
-              <h2 className="text-xl font-bold text-foreground">
-                How membership works
+            <div className="rounded-sm border border-border bg-background p-6 md:p-8 space-y-4">
+              <h2 className="text-xl font-bold text-foreground font-display">
+                Membership terms
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Choose a 1-month, 3-month, or 12-month training block. You can pay in full or take advantage of partial payments on eligible plans: pay 50% upfront to activate your pass, then settle the rest any time before your plan ends.
+                Choose a 1-month, 3-month, or 12-month training block. Eligible multi-month plans allow 50% upfront payment, with the remainder settled anytime before your term concludes.
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                No sign-up fees, no automatic termination penalties, and full access to invoice receipts from your dashboard.
+                No initiation charges, no termination penalties, and immutable invoice receipts.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Facility Etiquette & Values */}
-      <section className="border-b border-border py-16 bg-background">
+      <section className="py-16 bg-background">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6 max-w-3xl">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-            The Ironvale standard
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground font-display">
+            The floor standard
           </h2>
           <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
             <p>
-              We believe great gyms are defined by their atmosphere. Ironvale is built for people who respect their training and the space they train in. That means re-racking every plate, wiping down equipment after use, and treating other lifters with respect.
+              Ironvale is built for lifters who respect their training and the space they train in. Re-rack every plate, wipe down equipment after use, and leave platforms clean.
             </p>
             <p>
-              We do not permit commercial video shoots or tripods blocking aisles. When you step onto our floor, the focus is entirely on your workout.
+              We do not permit commercial filming or tripods blocking walkways. When you step onto the floor, the focus is entirely on training.
             </p>
           </div>
           <div className="pt-4">
             <Link href="/plans">
-              <Button size="lg" className="gap-2 font-semibold">
+              <Button size="lg" className="gap-2">
                 View membership options
                 <ArrowRight className="h-4 w-4" />
               </Button>
