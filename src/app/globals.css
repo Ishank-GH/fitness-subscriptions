@@ -4,35 +4,41 @@
 
 @layer base {
   :root {
-    --background: 220 33% 6%;
-    --foreground: 210 40% 98%;
+    /* Chalk-white canvas & near-black ink */
+    --background: 60 7% 95%; /* #F3F3F0 */
+    --foreground: 210 7% 6%; /* #0E0F10 */
 
-    --card: 222 33% 10%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 7% 6%;
 
-    --popover: 222 33% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 7% 6%;
 
-    --primary: 347 77% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 210 7% 6%;
+    --primary-foreground: 60 7% 95%;
 
-    --secondary: 220 28% 15%;
-    --secondary-foreground: 210 40% 96%;
+    --secondary: 60 6% 90%;
+    --secondary-foreground: 210 7% 6%;
 
-    --muted: 220 30% 13%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 60 6% 91%;
+    --muted-foreground: 220 5% 34%; /* WCAG AAA contrast against white & chalk */
 
-    --accent: 220 28% 20%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 60 6% 89%;
+    --accent-foreground: 210 7% 6%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 3 75% 48%; /* #D7261E competition red */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 30% 17%;
-    --input: 220 30% 17%;
-    --ring: 347 77% 50%;
+    --border: 60 4% 83%; /* #D6D6D0 hairline boundary */
+    --input: 60 4% 83%;
+    --ring: 210 7% 6%;
 
-    --radius: 0.375rem;
+    --radius: 0.25rem;
+
+    --plate-red: #D7261E;
+    --plate-blue: #1D4FD8;
+    --plate-yellow: #F2C230;
+    --plate-green: #1F9D55;
   }
 }
 
@@ -41,110 +47,108 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground;
+    @apply bg-background text-foreground antialiased selection:bg-foreground selection:text-background;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
+  }
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
 }
 
-/* Custom Ironvale Dark Styling for Clerk Components */
+/* Light styling for Clerk authentication modals and buttons */
 .cl-card {
-  background-color: #111622 !important;
-  border: 1px solid #1e2738 !important;
-  color: #f8fafc !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
-  border-radius: 0.375rem !important;
+  background-color: #ffffff !important;
+  border: 1px solid #d6d6d0 !important;
+  color: #0e0f10 !important;
+  box-shadow: none !important;
+  border-radius: 0.25rem !important;
 }
 
 .cl-headerTitle {
-  color: #f8fafc !important;
+  color: #0e0f10 !important;
   font-family: var(--font-display), sans-serif !important;
-  text-transform: uppercase !important;
-  letter-spacing: -0.01em !important;
+  letter-spacing: -0.02em !important;
 }
 
 .cl-headerSubtitle {
-  color: #94a3b8 !important;
+  color: #52555a !important;
 }
 
 .cl-socialButtonsBlockButton {
-  background-color: #171e2b !important;
-  border: 1px solid #1e2738 !important;
-  color: #f8fafc !important;
+  background-color: #f3f3f0 !important;
+  border: 1px solid #d6d6d0 !important;
+  color: #0e0f10 !important;
+  box-shadow: none !important;
 }
 
 .cl-socialButtonsBlockButton:hover {
-  background-color: #1f2736 !important;
+  background-color: #e8e8e3 !important;
 }
 
 .cl-socialButtonsBlockButtonText {
-  color: #f8fafc !important;
+  color: #0e0f10 !important;
 }
 
 .cl-dividerLine {
-  background-color: #1e2738 !important;
+  background-color: #d6d6d0 !important;
 }
 
 .cl-dividerText {
-  color: #94a3b8 !important;
-  font-family: monospace !important;
+  color: #52555a !important;
+  font-family: var(--font-mono), monospace !important;
   font-size: 0.75rem !important;
-  text-transform: uppercase !important;
 }
 
 .cl-formFieldLabel {
-  color: #f8fafc !important;
+  color: #0e0f10 !important;
   font-size: 0.8rem !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
 }
 
 .cl-formFieldInput {
-  background-color: #090d14 !important;
-  border: 1px solid #1e2738 !important;
-  color: #f8fafc !important;
-  border-radius: 0.375rem !important;
+  background-color: #ffffff !important;
+  border: 1px solid #d6d6d0 !important;
+  color: #0e0f10 !important;
+  border-radius: 0.25rem !important;
+  box-shadow: none !important;
 }
 
 .cl-formFieldInput:focus {
-  border-color: #e11d48 !important;
-  box-shadow: 0 0 0 1px #e11d48 !important;
+  border-color: #0e0f10 !important;
+  box-shadow: 0 0 0 1px #0e0f10 !important;
 }
 
 .cl-formButtonPrimary {
-  background-color: #e11d48 !important;
-  color: #ffffff !important;
+  background-color: #0e0f10 !important;
+  color: #f3f3f0 !important;
   font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
-  border-radius: 0.375rem !important;
+  letter-spacing: -0.01em !important;
+  border-radius: 0.25rem !important;
+  box-shadow: none !important;
 }
 
 .cl-formButtonPrimary:hover {
-  background-color: #be123c !important;
+  background-color: #26282b !important;
 }
 
 .cl-footerActionText {
-  color: #94a3b8 !important;
+  color: #52555a !important;
 }
 
 .cl-footerActionLink {
-  color: #e11d48 !important;
+  color: #0e0f10 !important;
   font-weight: 600 !important;
 }
 
 .cl-footerActionLink:hover {
-  color: #fb7185 !important;
+  text-decoration: underline !important;
 }
 
 .cl-footer {
   background: transparent !important;
-  border-top: 1px solid #1e2738 !important;
-}
-
-.cl-internal-b3fm6y,
-.cl-internal-4xka3e {
-  color: #94a3b8 !important;
+  border-top: 1px solid #d6d6d0 !important;
 }

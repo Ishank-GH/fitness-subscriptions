@@ -50,24 +50,11 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        brand: {
-          50: "#fff1f2",
-          100: "#ffe4e6",
-          200: "#fecdd3",
-          300: "#fda4af",
-          400: "#fb7185",
-          500: "#f43f5e",
-          600: "#e11d48",
-          700: "#be123c",
-          800: "#9f1239",
-          900: "#881337",
-          950: "#4c0519",
-        },
-        athletic: {
-          dark: "#0a0d14",
-          card: "#121722",
-          border: "#1f2736",
-          muted: "#8895a7",
+        plate: {
+          red: "#D7261E",
+          blue: "#1D4FD8",
+          yellow: "#F2C230",
+          green: "#1F9D55",
         },
       },
       borderRadius: {
@@ -78,6 +65,7 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         display: ["var(--font-display)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
     },
   },
@@ -85,4 +73,3 @@ const config: Config = {
 };
 
 export default config;
-

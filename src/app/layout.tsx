@@ -1,28 +1,33 @@
 import type { Metadata } from "next";
-import { Oswald, Inter } from "next/font/google";
+import { Archivo, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
-const fontDisplay = Oswald({
+const fontDisplay = Archivo({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["500", "600", "700"],
   display: "swap",
 });
 
-const fontSans = Inter({
+const fontSans = Instrument_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const fontMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Ironvale | Strength & Conditioning",
+  title: "Ironvale Strength & Conditioning",
   description:
-    "Memberships, training programs, and flexible payment plans built for serious lifters and athletes.",
+    "Barbell club, calibrated competition plates, and flexible membership installment plans.",
 };
 
 export default function RootLayout({
@@ -32,8 +37,11 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`dark ${fontDisplay.variable} ${fontSans.variable}`}>
-        <body className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+      <html
+        lang="en"
+        className={`${fontDisplay.variable} ${fontSans.variable} ${fontMono.variable}`}
+      >
+        <body className="min-h-screen bg-background text-foreground flex flex-col font-sans antialiased selection:bg-foreground selection:text-background">
           <Navbar />
           <div className="flex-1 flex flex-col">{children}</div>
           <Footer />
