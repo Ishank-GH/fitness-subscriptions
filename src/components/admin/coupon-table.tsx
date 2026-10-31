@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/empty-state";
 import { formatPaiseToRupees, formatDate } from "@/lib/format";
 import {
   CouponDialog,
@@ -79,17 +80,15 @@ export function CouponTable({
       </div>
 
       {coupons.length === 0 ? (
-        <div className="rounded border border-border bg-card p-12 text-center space-y-4">
-          <div className="h-10 w-10 rounded bg-primary/10 text-primary flex items-center justify-center mx-auto">
-            <Tag className="h-5 w-5" />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            No promotional coupons created yet.
-          </p>
-          <Button onClick={handleOpenCreate} size="sm" variant="outline">
-            Create First Coupon
-          </Button>
-        </div>
+        <EmptyState
+          icon={Tag}
+          title="No Promotional Coupons"
+          description="No promotional campaigns or coupon codes have been configured yet."
+          action={{
+            label: "Create First Coupon",
+            onClick: handleOpenCreate,
+          }}
+        />
       ) : (
         <div className="rounded border border-border bg-card overflow-hidden">
           <div className="overflow-x-auto">
@@ -199,7 +198,6 @@ export function CouponTable({
         </div>
       )}
 
-      {/* Create / Edit Modal Dialog */}
       <CouponDialog
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}

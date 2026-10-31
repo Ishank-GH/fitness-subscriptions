@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Receipt, Dumbbell, ArrowRight } from "lucide-react";
+import { Receipt, Dumbbell } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { User } from "@/lib/db/models/user";
 import { Transaction } from "@/lib/db/models/transaction";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
 import {
   BillingInvoiceList,
   SerializedTransaction,
@@ -85,29 +86,17 @@ export default async function BillingPage() {
         </Link>
       </div>
 
-      {/* Transactions List or Empty State */}
+      {/* Transactions List or Reusable Empty State */}
       {transactions.length === 0 ? (
-        <div className="rounded border border-border bg-card p-8 sm:p-12 text-center space-y-4 max-w-xl mx-auto my-8">
-          <div className="h-12 w-12 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center mx-auto">
-            <Receipt className="h-6 w-6" />
-          </div>
-          <div className="space-y-1.5">
-            <h3 className="text-lg font-bold font-display uppercase tracking-tight text-foreground">
-              No Billing History Found
-            </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              You haven&apos;t initiated any membership purchases yet. Once you enroll in a training tier, your immutable invoice receipts and installment logs will appear here.
-            </p>
-          </div>
-          <div className="pt-2">
-            <Link href="/plans">
-              <Button size="sm" className="gap-2">
-                Browse Membership Plans
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <EmptyState
+          icon={Receipt}
+          title="No Billing History Found"
+          description="You haven't initiated any membership purchases yet. Once you enroll in a training tier, your immutable invoice receipts and installment logs will appear here."
+          action={{
+            label: "Browse Membership Plans",
+            href: "/plans",
+          }}
+        />
       ) : (
         <BillingInvoiceList transactions={transactions} />
       )}

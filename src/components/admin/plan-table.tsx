@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/empty-state";
 import { formatPaiseToRupees, formatDurationMonths } from "@/lib/format";
 import { PlanDialog, SerializedAdminPlan } from "@/components/admin/plan-dialog";
 
@@ -73,17 +74,15 @@ export function PlanTable({
       </div>
 
       {plans.length === 0 ? (
-        <div className="rounded border border-border bg-card p-12 text-center space-y-4">
-          <div className="h-10 w-10 rounded bg-primary/10 text-primary flex items-center justify-center mx-auto">
-            <Dumbbell className="h-5 w-5" />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            No subscription tiers found in the catalog.
-          </p>
-          <Button onClick={handleOpenCreate} size="sm" variant="outline">
-            Create First Plan
-          </Button>
-        </div>
+        <EmptyState
+          icon={Dumbbell}
+          title="No Membership Tiers Configured"
+          description="Your catalog currently has no training blocks. Create your first plan to allow athletes to subscribe."
+          action={{
+            label: "Create First Plan",
+            onClick: handleOpenCreate,
+          }}
+        />
       ) : (
         <div className="rounded border border-border bg-card overflow-hidden">
           <div className="overflow-x-auto">
