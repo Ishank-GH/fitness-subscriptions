@@ -58,21 +58,6 @@ export function conflict(
 }
 
 /**
- * Normalizes Zod validation issues into field-specific error lists.
- */
-export function formatZodError(error: ZodError): Record<string, string[]> {
-  const formatted: Record<string, string[]> = {};
-  for (const issue of error.issues) {
-    const path = issue.path.join(".") || "general";
-    if (!formatted[path]) {
-      formatted[path] = [];
-    }
-    formatted[path].push(issue.message);
-  }
-  return formatted;
-}
-
-/**
  * Maps application and database errors into a consistent response envelope.
  * Uncaught internal errors are logged server-side and masked from clients.
  */
@@ -98,7 +83,7 @@ export function handleApiError(error: unknown): NextResponse<ApiResponse<never>>
         error: {
           code: "VALIDATION_ERROR",
           message: "Input validation failed",
-          details: formatZodError(error),
+          details: error.flatten().fieldErrors as Record<string, string[]>,
         },
       },
       { status: 400 }

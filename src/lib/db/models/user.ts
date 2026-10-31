@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
-import { UserRole, SubscriptionStatus } from "@/types";
-import { deriveSubscriptionStatus, isExpiringSoon } from "@/lib/subscription-status";
+import { UserRole } from "@/types";
 // Ensure referenced schema is registered for populate queries
 import "./subscription-plan";
 import "./transaction";
@@ -22,8 +21,6 @@ export interface IUser extends Document {
   subscription?: IUserSubscription | null;
   createdAt: Date;
   updatedAt: Date;
-  derivedStatus: SubscriptionStatus;
-  isExpiringSoon: boolean;
 }
 
 const UserSubscriptionSchema = new Schema<IUserSubscription>(
@@ -96,24 +93,8 @@ const UserSchema = new Schema<IUser>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
   }
 );
-
-UserSchema.virtual("derivedStatus").get(function (this: IUser): SubscriptionStatus {
-  return deriveSubscriptionStatus(
-    this.subscription?.endDate,
-    this.subscription?.balanceDuePaise
-  );
-});
-
-UserSchema.virtual("isExpiringSoon").get(function (this: IUser): boolean {
-  return isExpiringSoon(
-    this.subscription?.endDate,
-    this.subscription?.balanceDuePaise
-  );
-});
 
 export const User: Model<IUser> =
   mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
