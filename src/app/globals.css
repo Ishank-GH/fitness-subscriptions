@@ -177,3 +177,90 @@
   color: #d7261e;
   -webkit-text-stroke-color: #d7261e;
 }
+
+/* 
+   Micro-interactions
+/* Nav links: underline enters from left (320ms), exits to right */
+.nav-link-underline {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding-bottom: 2px;
+}
+
+.nav-link-underline::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-link-underline:hover::after,
+.nav-link-underline:focus-visible::after,
+.nav-link-underline[data-active="true"]::after {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+/* Primary buttons: fill sweeps up from bottom (380ms), text swaps, arrow slides 4px (250ms) */
+.btn-primary-sweep {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 380ms cubic-bezier(0.22, 1, 0.36, 1),
+              background-color 380ms cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-primary-sweep::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--destructive); /* #D7261E accent red */
+  transform: translateY(101%);
+  transition: transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: -1;
+}
+
+.btn-primary-sweep:hover::before,
+.btn-primary-sweep:focus-visible::before {
+  transform: translateY(0);
+}
+
+.btn-primary-sweep:hover,
+.btn-primary-sweep:focus-visible {
+  color: #FFFFFF !important;
+}
+
+.btn-primary-sweep svg:not(.animate-spin) {
+  transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-primary-sweep:hover svg:not(.animate-spin),
+.btn-primary-sweep:focus-visible svg:not(.animate-spin) {
+  transform: translateX(4px);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .nav-link-underline::after,
+  .btn-primary-sweep,
+  .btn-primary-sweep::before,
+  .btn-primary-sweep svg:not(.animate-spin) {
+    transition: none !important;
+    animation: none !important;
+  }
+  .btn-primary-sweep::before {
+    display: none !important;
+  }
+  .btn-primary-sweep:hover svg:not(.animate-spin),
+  .btn-primary-sweep:focus-visible svg:not(.animate-spin) {
+    transform: none !important;
+  }
+}

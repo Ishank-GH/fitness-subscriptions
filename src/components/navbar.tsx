@@ -34,7 +34,7 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop navigation */}
+        {/* Desktop navigation with directional underline micro-interaction */}
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
@@ -42,8 +42,9 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
+                data-active={isActive ? "true" : undefined}
                 className={cn(
-                  "text-sm transition-colors hover:text-foreground",
+                  "nav-link-underline text-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground rounded-sm",
                   isActive
                     ? "text-foreground font-semibold"
                     : "text-muted-foreground font-normal"
@@ -81,8 +82,9 @@ export function Navbar() {
                 </Button>
               </Link>
               <Link href="/plans">
-                <Button size="sm" className="text-xs">
+                <Button size="sm" className="text-xs gap-1">
                   Join
+                  <ArrowUpRight className="h-3.5 w-3.5" />
                 </Button>
               </Link>
             </div>
@@ -104,7 +106,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile drawer on raised surface */}
+      {/* Mobile drawer */}
       {mobileMenuOpen && (
         <div className="border-b border-border bg-card px-4 py-6 md:hidden">
           <nav className="flex flex-col gap-3">
@@ -112,8 +114,9 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
+                data-active={pathname === link.href ? "true" : undefined}
                 className={cn(
-                  "text-sm py-2 border-b border-border/50 transition-colors",
+                  "nav-link-underline text-sm py-2 border-b border-border/50 transition-colors",
                   pathname === link.href
                     ? "text-foreground font-semibold"
                     : "text-muted-foreground"
@@ -126,7 +129,7 @@ export function Navbar() {
             <div className="pt-3 flex flex-col gap-2">
               {isSignedIn ? (
                 <Link href="/dashboard" className="w-full">
-                  <Button className="w-full justify-between text-xs" size="sm">
+                  <Button className="w-full justify-between text-xs" size="sm" variant="outline">
                     Dashboard
                     <ArrowUpRight className="h-3.5 w-3.5" />
                   </Button>
@@ -139,8 +142,9 @@ export function Navbar() {
                     </Button>
                   </Link>
                   <Link href="/plans" className="w-full">
-                    <Button className="w-full justify-center text-xs" size="sm">
+                    <Button className="w-full justify-center text-xs gap-1" size="sm">
                       Join
+                      <ArrowUpRight className="h-3.5 w-3.5" />
                     </Button>
                   </Link>
                 </>
