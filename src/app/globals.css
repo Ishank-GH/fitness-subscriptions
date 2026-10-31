@@ -8,7 +8,7 @@
     --background: #DAD8D1;
     --foreground: #141517;
 
-    /* Raised surfaces: #E5E3DC (never pure white) */
+    /* Raised surfaces: #E5E3DC */
     --card: #E5E3DC;
     --card-foreground: #141517;
 
@@ -159,4 +159,21 @@
 .cl-footer {
   background: transparent !important;
   border-top: 1px solid #b4b1a8 !important;
+}
+
+.hero-lift {
+  padding-right: 0.5em;
+  white-space: nowrap;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  font-size: clamp(3rem, 9vw, 8rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px #5a5c60;
+  transition: color 0.3s, -webkit-text-stroke-color 0.3s;
+}
+.hero-lift:hover {
+  color: #d7261e;
+  -webkit-text-stroke-color: #d7261e;
 }
