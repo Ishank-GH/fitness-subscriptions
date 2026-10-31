@@ -54,9 +54,13 @@ export async function POST(
     const now = new Date();
     const balanceToForgive = transaction.remainingBalancePaise;
 
-    // Atomic conditional update ensuring transaction remains in PARTIAL status
+    // Atomic conditional update ensuring transaction remains in PARTIAL status and amountPaidPaise has not shifted
     const updated = await Transaction.findOneAndUpdate(
-      { _id: transaction._id, paymentStatus: "PARTIAL" },
+      {
+        _id: transaction._id,
+        paymentStatus: "PARTIAL",
+        amountPaidPaise: transaction.amountPaidPaise,
+      },
       {
         $push: {
           payments: {
