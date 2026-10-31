@@ -162,7 +162,7 @@ export function AdminTransactionTable({ transactions }: { transactions: Serializ
                                 {tx.overriddenAt && (
                                   <div className="pt-2 text-muted-foreground text-[10px]">
                                     Overridden by {tx.overriddenBy?.name || "Admin"} on {formatDateTime(tx.overriddenAt)}
-                                    <br />"{tx.overrideNote}"
+                                    <br />&quot;{tx.overrideNote}&quot;
                                   </div>
                                 )}
                               </div>
