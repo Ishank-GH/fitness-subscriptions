@@ -36,14 +36,9 @@ export function OverrideDialog({
             <div className="h-8 w-8 rounded bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
               <ShieldAlert className="h-4 w-4" />
             </div>
-            <div>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
-                Management Audit Override
-              </span>
-              <h2 className="text-xl font-bold font-display uppercase tracking-tight text-foreground">
-                Override {transaction.invoiceNumber}
-              </h2>
-            </div>
+            <h2 className="text-lg font-bold text-foreground">
+              Override balance for {transaction.invoiceNumber}
+            </h2>
           </div>
           <button
             type="button"
@@ -84,7 +79,7 @@ function OverrideForm({
 
     const cleanNote = overrideNote.trim();
     if (cleanNote.length < 3) {
-      setErrorMessage("Please enter an audit reason (minimum 3 characters).");
+      setErrorMessage("Please enter an override reason (minimum 3 characters).");
       return;
     }
 
@@ -100,7 +95,7 @@ function OverrideForm({
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.error?.message || "Failed to complete administrative override.");
+        throw new Error(data.error?.message || "Failed to complete balance override.");
       }
 
       onSuccess();
@@ -118,14 +113,14 @@ function OverrideForm({
       <div className="rounded border border-amber-500/30 bg-amber-500/5 p-3.5 space-y-1.5 text-xs">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Athlete:</span>
-          <span className="font-semibold text-foreground">{transaction.athleteName}</span>
+          <span className="font-medium text-foreground">{transaction.athleteName}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Plan:</span>
           <span className="font-mono text-foreground">{transaction.planName}</span>
         </div>
         <div className="flex justify-between border-t border-amber-500/20 pt-1.5 font-bold">
-          <span className="text-amber-400">Balance to Forgive:</span>
+          <span className="text-amber-400">Balance to forgive:</span>
           <span className="font-mono text-amber-400">
             {formatPaiseToRupees(transaction.remainingBalancePaise)}
           </span>
@@ -133,8 +128,8 @@ function OverrideForm({
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="auditReason" className="text-xs font-semibold text-foreground">
-          Audit Reason / Override Note
+        <label htmlFor="auditReason" className="text-xs font-medium text-foreground">
+          Reason for override
         </label>
         <textarea
           id="auditReason"
@@ -146,7 +141,7 @@ function OverrideForm({
           className="w-full rounded border border-input bg-background p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-sans"
         />
         <p className="text-[11px] text-muted-foreground">
-          This audit explanation will be permanently recorded in the immutable invoice history.
+          This note will be recorded with the payment record.
         </p>
       </div>
 
@@ -177,10 +172,10 @@ function OverrideForm({
           type="submit"
           size="sm"
           disabled={isSubmitting || overrideNote.trim().length < 3}
-          className="font-semibold gap-1.5 bg-amber-600 hover:bg-amber-500 text-black"
+          className="font-medium gap-1.5 bg-amber-600 hover:bg-amber-500 text-black"
         >
           {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          Confirm Override
+          Confirm override
         </Button>
       </div>
     </form>

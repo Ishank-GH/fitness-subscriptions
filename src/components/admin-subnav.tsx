@@ -7,7 +7,6 @@ import {
   Dumbbell,
   Tag,
   ReceiptText,
-  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,17 +18,17 @@ const ADMIN_NAV_ITEMS = [
   },
   {
     href: "/admin/plans",
-    label: "Plans Manager",
+    label: "Plans",
     icon: Dumbbell,
   },
   {
     href: "/admin/coupons",
-    label: "Coupons Manager",
+    label: "Coupons",
     icon: Tag,
   },
   {
     href: "/admin/transactions",
-    label: "Transactions & Overrides",
+    label: "Payments",
     icon: ReceiptText,
   },
 ];
@@ -61,10 +60,6 @@ export function AdminSubnav() {
             );
           })}
         </nav>
-        <div className="hidden md:flex items-center gap-1.5 text-[11px] uppercase font-mono tracking-widest text-primary font-semibold">
-          <ShieldCheck className="h-4 w-4" />
-          Management Portal
-        </div>
       </div>
     </div>
   );

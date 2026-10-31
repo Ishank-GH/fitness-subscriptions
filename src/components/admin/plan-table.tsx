@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
-  Dumbbell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -60,26 +59,25 @@ export function PlanTable({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold font-display uppercase tracking-tight text-foreground">
-            Current Tier Catalog ({plans.length})
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
+            Plans ({plans.length})
           </h2>
-          <p className="text-xs text-muted-foreground font-mono mt-0.5">
-            Active and archived memberships configured in the database.
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Active and archived membership plans.
           </p>
         </div>
-        <Button onClick={handleOpenCreate} size="sm" className="gap-2 font-semibold shrink-0">
+        <Button onClick={handleOpenCreate} size="sm" className="gap-2 font-medium shrink-0">
           <Plus className="h-4 w-4" />
-          Add Membership Plan
+          Add plan
         </Button>
       </div>
 
       {plans.length === 0 ? (
         <EmptyState
-          icon={Dumbbell}
-          title="No Membership Tiers Configured"
-          description="Your catalog currently has no training blocks. Create your first plan to allow athletes to subscribe."
+          title="No plans found"
+          description="Create your first training plan to allow members to subscribe."
           action={{
-            label: "Create First Plan",
+            label: "Add plan",
             onClick: handleOpenCreate,
           }}
         />
@@ -88,12 +86,12 @@ export function PlanTable({
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-border/60 bg-muted/30 text-muted-foreground font-mono uppercase text-[11px] text-left">
-                  <th className="py-3 px-4">Plan Name</th>
+                <tr className="border-b border-border/60 bg-muted/30 text-muted-foreground font-mono text-[11px] text-left">
+                  <th className="py-3 px-4">Plan name</th>
                   <th className="py-3 px-4">Duration</th>
-                  <th className="py-3 px-4">Base Rate</th>
+                  <th className="py-3 px-4">Base rate</th>
                   <th className="py-3 px-4">Discount</th>
-                  <th className="py-3 px-4">Net Price</th>
+                  <th className="py-3 px-4">Net price</th>
                   <th className="py-3 px-4">Installments</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-right">Actions</th>
@@ -111,7 +109,7 @@ export function PlanTable({
                       key={p.id}
                       className={p.isActive ? "hover:bg-muted/20 transition-colors" : "opacity-60 bg-muted/10"}
                     >
-                      <td className="py-3.5 px-4 font-sans font-semibold text-foreground text-sm">
+                      <td className="py-3.5 px-4 font-sans font-medium text-foreground text-sm">
                         {p.name}
                       </td>
                       <td className="py-3.5 px-4 text-muted-foreground">
@@ -174,7 +172,7 @@ export function PlanTable({
                             disabled={isLoading}
                             onClick={() => handleToggleStatus(p)}
                             className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive"
-                            title={p.isActive ? "Archive Plan" : "Restore Plan"}
+                            title={p.isActive ? "Archive plan" : "Restore plan"}
                           >
                             {isLoading ? (
                               <Loader2 className="h-3.5 w-3.5 animate-spin" />

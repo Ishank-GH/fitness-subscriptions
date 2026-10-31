@@ -36,7 +36,7 @@ export function CheckoutSuccessAlert({
               ? `Your upfront payment was processed. An outstanding balance of ${formatPaiseToRupees(
                   balanceDuePaise
                 )} remains due before your training block ends.`
-              : "Your membership is now active. Welcome to Ironvale—facility and platform privileges are unlocked."}
+              : "Your membership is now active. Welcome to Ironvale! Facility and platform privileges are unlocked."}
           </p>
         </div>
       </div>

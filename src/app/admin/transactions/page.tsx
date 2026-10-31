@@ -6,8 +6,8 @@ import { AdminTransactionTable, SerializedAdminTransaction } from "@/components/
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Transactions & Overrides | Ironvale Admin",
-  description: "Audit billing events, inspect plan snapshots, and manage administrative payment overrides.",
+  title: "Payments | Ironvale Admin",
+  description: "View platform transactions, payment records, and handle balance overrides.",
 };
 
 interface PopulatedUserLean {
@@ -82,14 +82,11 @@ export default async function AdminTransactionsPage() {
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       {/* Page Header */}
       <div className="border-b border-border pb-6">
-        <span className="text-xs uppercase font-mono tracking-widest text-primary font-semibold">
-          Financial Governance
-        </span>
-        <h1 className="text-2xl sm:text-3xl font-black uppercase font-display tracking-tight text-foreground mt-1">
-          Audit Ledger & Overrides
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+          Payments
         </h1>
-        <p className="text-xs text-muted-foreground font-mono mt-1">
-          Search platform transactions, audit immutable historical snapshots, and apply management balance adjustments.
+        <p className="text-sm text-muted-foreground mt-1">
+          View all transactions, payment records, and handle balance overrides.
         </p>
       </div>
 

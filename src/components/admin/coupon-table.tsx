@@ -66,26 +66,25 @@ export function CouponTable({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold font-display uppercase tracking-tight text-foreground">
-            Promotional Coupons ({coupons.length})
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
+            Coupons ({coupons.length})
           </h2>
-          <p className="text-xs text-muted-foreground font-mono mt-0.5">
-            Active and archived discount codes, limits, and expiration windows.
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Active and archived discount codes and limits.
           </p>
         </div>
-        <Button onClick={handleOpenCreate} size="sm" className="gap-2 font-semibold shrink-0">
+        <Button onClick={handleOpenCreate} size="sm" className="gap-2 font-medium shrink-0">
           <Plus className="h-4 w-4" />
-          Create Promo Coupon
+          Add coupon
         </Button>
       </div>
 
       {coupons.length === 0 ? (
         <EmptyState
-          icon={Tag}
-          title="No Promotional Coupons"
-          description="No promotional campaigns or coupon codes have been configured yet."
+          title="No coupons found"
+          description="Create your first discount coupon for member checkouts."
           action={{
-            label: "Create First Coupon",
+            label: "Add coupon",
             onClick: handleOpenCreate,
           }}
         />
@@ -94,11 +93,11 @@ export function CouponTable({
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-border/60 bg-muted/30 text-muted-foreground font-mono uppercase text-[11px] text-left">
-                  <th className="py-3 px-4">Coupon Code</th>
-                  <th className="py-3 px-4">Discount Value</th>
-                  <th className="py-3 px-4">Redemption Count</th>
-                  <th className="py-3 px-4">Valid Window</th>
+                <tr className="border-b border-border/60 bg-muted/30 text-muted-foreground font-mono text-[11px] text-left">
+                  <th className="py-3 px-4">Coupon code</th>
+                  <th className="py-3 px-4">Discount</th>
+                  <th className="py-3 px-4">Uses</th>
+                  <th className="py-3 px-4">Validity</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
@@ -177,7 +176,7 @@ export function CouponTable({
                             disabled={isLoading}
                             onClick={() => handleToggleStatus(c)}
                             className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive"
-                            title={c.isActive ? "Archive Coupon" : "Restore Coupon"}
+                            title={c.isActive ? "Archive coupon" : "Restore coupon"}
                           >
                             {isLoading ? (
                               <Loader2 className="h-3.5 w-3.5 animate-spin" />

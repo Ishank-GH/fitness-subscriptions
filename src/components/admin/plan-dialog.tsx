@@ -35,14 +35,9 @@ export function PlanDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-lg rounded border border-border bg-card p-6 shadow-2xl space-y-6">
         <div className="flex items-center justify-between border-b border-border/50 pb-3">
-          <div>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
-              {planToEdit ? "Modify Existing Plan" : "Create New Tier"}
-            </span>
-            <h2 className="text-xl font-bold font-display uppercase tracking-tight text-foreground">
-              {planToEdit ? `Edit ${planToEdit.name}` : "New Membership Plan"}
-            </h2>
-          </div>
+          <h2 className="text-lg font-bold text-foreground">
+            {planToEdit ? `Edit ${planToEdit.name}` : "New plan"}
+          </h2>
           <button
             type="button"
             onClick={onClose}
@@ -92,7 +87,6 @@ function PlanForm({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
-  // Parse numerical inputs safely without forcing premature 0 fallback on backspace
   const parsedDuration = Number(durationMonths) || 0;
   const parsedMonthlyRupees = Number(monthlyRupees) || 0;
   const parsedDiscount = Number(discountPercentage) || 0;
@@ -126,7 +120,7 @@ function PlanForm({
     }
 
     if (isNaN(validDiscount) || validDiscount < 0 || validDiscount > 100) {
-      setErrorMessage("Commitment discount must be between 0% and 100%.");
+      setErrorMessage("Discount must be between 0% and 100%.");
       return;
     }
 
@@ -154,7 +148,7 @@ function PlanForm({
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.error?.message || "Failed to save subscription plan.");
+        throw new Error(data.error?.message || "Failed to save plan.");
       }
 
       onSaved();
@@ -169,14 +163,14 @@ function PlanForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1.5">
-        <label htmlFor="planName" className="text-xs font-semibold text-foreground">
-          Plan Title
+        <label htmlFor="planName" className="text-xs font-medium text-foreground">
+          Plan title
         </label>
         <Input
           id="planName"
           type="text"
           required
-          placeholder="e.g. 6-Month Powerlifting Cycle"
+          placeholder="e.g. 6-Month Progression"
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="text-xs sm:text-sm font-medium"
@@ -185,8 +179,8 @@ function PlanForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <label htmlFor="durationMonths" className="text-xs font-semibold text-foreground">
-            Duration (Months)
+          <label htmlFor="durationMonths" className="text-xs font-medium text-foreground">
+            Duration (months)
           </label>
           <Input
             id="durationMonths"
@@ -201,8 +195,8 @@ function PlanForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="monthlyRate" className="text-xs font-semibold text-foreground">
-            Base Monthly Rate (₹)
+          <label htmlFor="monthlyRate" className="text-xs font-medium text-foreground">
+            Monthly rate (₹)
           </label>
           <div className="relative">
             <span className="absolute left-3 top-2.5 text-xs text-muted-foreground font-semibold pointer-events-none">
@@ -224,9 +218,9 @@ function PlanForm({
 
       <div className="space-y-1.5">
         <div className="flex justify-between items-center text-xs">
-          <label htmlFor="discountPercentage" className="font-semibold text-foreground flex items-center gap-1.5">
+          <label htmlFor="discountPercentage" className="font-medium text-foreground flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            Commitment Discount (%)
+            Commitment discount (%)
           </label>
           <span className="font-mono text-muted-foreground">{parsedDiscount}%</span>
         </div>
@@ -254,7 +248,7 @@ function PlanForm({
             onChange={(e) => setAllowPartialPayment(e.target.checked)}
             className="h-4 w-4 rounded border-border bg-background text-primary accent-primary"
           />
-          <span>Allow 50% upfront partial installment on checkout</span>
+          <span>Allow 50% upfront payment</span>
         </label>
 
         {isEditing && (
@@ -265,7 +259,7 @@ function PlanForm({
               onChange={(e) => setIsActive(e.target.checked)}
               className="h-4 w-4 rounded border-border bg-background text-primary accent-primary"
             />
-            <span>Plan is Active (visible in public catalog)</span>
+            <span>Active plan (visible to members)</span>
           </label>
         )}
       </div>
@@ -273,7 +267,7 @@ function PlanForm({
       {/* Pricing Calculation Preview */}
       <div className="rounded border border-border/80 bg-muted/30 p-3.5 space-y-2 text-xs font-mono">
         <div className="flex justify-between text-muted-foreground">
-          <span>Gross Total:</span>
+          <span>Gross total:</span>
           <span className="text-foreground">{formatPaiseToRupees(rupeesToPaise(grossRupees))}</span>
         </div>
         {parsedDiscount > 0 && (
@@ -283,12 +277,12 @@ function PlanForm({
           </div>
         )}
         <div className="flex justify-between font-bold text-foreground pt-1 border-t border-border/50">
-          <span>Net Plan Price:</span>
+          <span>Net price:</span>
           <span>{formatPaiseToRupees(rupeesToPaise(totalRupees))}</span>
         </div>
         {allowPartialPayment && (
           <div className="flex justify-between text-amber-400 text-[11px]">
-            <span>50% Upfront Due:</span>
+            <span>50% upfront:</span>
             <span>{formatPaiseToRupees(rupeesToPaise(minimumUpfrontRupees))}</span>
           </div>
         )}
@@ -315,10 +309,10 @@ function PlanForm({
           type="submit"
           size="sm"
           disabled={isSubmitting || !name.trim()}
-          className="font-semibold gap-1.5"
+          className="font-medium gap-1.5"
         >
           {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          {isEditing ? "Save Changes" : "Create Plan"}
+          {isEditing ? "Save changes" : "Create plan"}
         </Button>
       </div>
     </form>

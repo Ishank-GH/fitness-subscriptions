@@ -1,12 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import {
   Search,
   CheckCircle2,
   Clock,
-  ShieldCheck,
   ChevronDown,
   ChevronUp,
   Receipt,
@@ -67,23 +65,15 @@ export function AdminTransactionTable({
 }: {
   transactions: SerializedAdminTransaction[];
 }) {
-  const router = useRouter();
-
-  // Search & Filter state
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<"ALL" | "COMPLETED" | "PARTIAL" | "PENDING">("ALL");
-
-  // Expansion state
   const [expandedId, setExpandedId] = React.useState<string | null>(null);
-
-  // Override dialog target state
   const [overrideTarget, setOverrideTarget] = React.useState<OverrideTransactionTarget | null>(null);
 
   function toggleExpand(id: string) {
     setExpandedId((prev) => (prev === id ? null : id));
   }
 
-  // Filter transactions by status & search term
   const filteredTransactions = transactions.filter((tx) => {
     const matchesStatus = statusFilter === "ALL" || tx.paymentStatus === statusFilter;
 
@@ -143,7 +133,7 @@ export function AdminTransactionTable({
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-border/60 bg-muted/30 text-muted-foreground font-mono uppercase text-[11px] text-left">
+                <tr className="border-b border-border/60 bg-muted/30 text-muted-foreground font-mono text-[11px] text-left">
                   <th className="py-3 px-4">Invoice</th>
                   <th className="py-3 px-4">Athlete</th>
                   <th className="py-3 px-4">Plan</th>
@@ -240,7 +230,7 @@ export function AdminTransactionTable({
                               onClick={() => toggleExpand(tx.id)}
                               className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
                             >
-                              <span>{isExpanded ? "Hide" : "Inspect"}</span>
+                              <span>{isExpanded ? "Hide" : "Details"}</span>
                               {isExpanded ? (
                                 <ChevronUp className="h-3.5 w-3.5 ml-1" />
                               ) : (
@@ -251,31 +241,31 @@ export function AdminTransactionTable({
                         </td>
                       </tr>
 
-                      {/* Expandable Audit Trail */}
+                      {/* Expandable History and Snapshot Details */}
                       {isExpanded && (
                         <tr className="bg-muted/15">
-                          <td colSpan={7} className="p-4 sm:p-5 border-t border-border/40">
+                          <td colSpan={7} className="p-4 sm:p-5 border-t border-border/40 font-sans">
                             <div className="space-y-4">
                               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div className="rounded border border-border/50 bg-background/50 p-3 space-y-1">
-                                  <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider block">
-                                    Plan Snapshot
+                                  <span className="text-[11px] text-muted-foreground font-medium block">
+                                    Plan details
                                   </span>
-                                  <p className="font-semibold text-foreground">
+                                  <p className="font-semibold text-foreground text-xs">
                                     {tx.planSnapshot.name} ({formatDurationMonths(tx.planSnapshot.durationMonths)})
                                   </p>
-                                  <p className="text-[11px] text-muted-foreground">
+                                  <p className="text-[11px] text-muted-foreground font-mono">
                                     Rate: {formatPaiseToRupees(tx.planSnapshot.baseMonthlyPricePaise)}/mo | Disc: {tx.planSnapshot.discountPercentage}%
                                   </p>
                                 </div>
 
                                 <div className="rounded border border-border/50 bg-background/50 p-3 space-y-1">
-                                  <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider block">
-                                    Coupon Snapshot
+                                  <span className="text-[11px] text-muted-foreground font-medium block">
+                                    Coupon details
                                   </span>
                                   {tx.couponSnapshot ? (
                                     <div>
-                                      <span className="font-mono font-bold text-emerald-400 flex items-center gap-1">
+                                      <span className="font-mono font-bold text-emerald-400 flex items-center gap-1 text-xs">
                                         <Tag className="h-3 w-3" />
                                         {tx.couponSnapshot.code}
                                       </span>
@@ -286,20 +276,20 @@ export function AdminTransactionTable({
                                       </p>
                                     </div>
                                   ) : (
-                                    <p className="text-muted-foreground">None applied</p>
+                                    <p className="text-muted-foreground text-xs">None applied</p>
                                   )}
                                 </div>
 
                                 <div className="rounded border border-border/50 bg-background/50 p-3 space-y-1">
-                                  <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider block">
-                                    Payment Dates
+                                  <span className="text-[11px] text-muted-foreground font-medium block">
+                                    Payment dates
                                   </span>
-                                  <p className="text-muted-foreground">
+                                  <p className="text-muted-foreground text-xs">
                                     Created: {formatDateTime(tx.createdAt)}
                                   </p>
                                   {tx.paymentDate && (
-                                    <p className="text-foreground">
-                                      First Payment: {formatDateTime(tx.paymentDate)}
+                                    <p className="text-foreground text-xs">
+                                      First payment: {formatDateTime(tx.paymentDate)}
                                     </p>
                                   )}
                                 </div>
@@ -308,11 +298,10 @@ export function AdminTransactionTable({
                               {/* Administrative Override Meta */}
                               {tx.overriddenAt && (
                                 <div className="rounded border border-primary/30 bg-primary/5 p-3 space-y-1">
-                                  <span className="text-[10px] font-mono uppercase text-primary font-bold tracking-wider flex items-center gap-1.5">
-                                    <ShieldCheck className="h-3.5 w-3.5" />
-                                    Administrative Override Ledger Audit
+                                  <span className="text-xs text-primary font-semibold block">
+                                    Administrative override
                                   </span>
-                                  <p className="text-foreground">
+                                  <p className="text-foreground text-xs">
                                     Overridden by <strong className="font-semibold">{tx.overriddenBy?.name || tx.overriddenBy?.email || "Admin"}</strong> on {formatDateTime(tx.overriddenAt)}
                                   </p>
                                   {tx.overrideNote && (
@@ -325,13 +314,13 @@ export function AdminTransactionTable({
 
                               {/* Installment History Log */}
                               <div className="space-y-1.5">
-                                <span className="text-[10px] font-mono uppercase font-bold text-muted-foreground tracking-wider block">
-                                  Installment Transactions ({tx.payments.length})
+                                <span className="text-xs font-semibold text-muted-foreground block">
+                                  Payment history ({tx.payments.length})
                                 </span>
                                 {tx.payments.length === 0 ? (
-                                  <p className="text-muted-foreground italic">No payments recorded.</p>
+                                  <p className="text-muted-foreground text-xs italic">No payments recorded.</p>
                                 ) : (
-                                  <div className="rounded border border-border/50 overflow-hidden divide-y divide-border/40">
+                                  <div className="rounded border border-border/50 overflow-hidden divide-y divide-border/40 font-mono">
                                     {tx.payments.map((p, idx) => (
                                       <div
                                         key={idx}
@@ -339,11 +328,11 @@ export function AdminTransactionTable({
                                       >
                                         <div className="flex items-center gap-2">
                                           <Receipt className="h-3.5 w-3.5 text-primary shrink-0" />
-                                          <span className="font-mono font-medium text-foreground">
+                                          <span className="font-medium text-foreground">
                                             {formatPaiseToRupees(p.amountPaise)}
                                           </span>
                                           <span className="text-[11px] text-muted-foreground ml-2">
-                                            Reference: {p.reference}
+                                            Ref: {p.reference}
                                           </span>
                                         </div>
                                         <span className="text-muted-foreground text-[11px]">
@@ -372,7 +361,7 @@ export function AdminTransactionTable({
         isOpen={Boolean(overrideTarget)}
         onClose={() => setOverrideTarget(null)}
         transaction={overrideTarget}
-        onSuccess={() => router.refresh()}
+        onSuccess={() => window.location.reload()}
       />
     </div>
   );

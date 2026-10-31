@@ -7,7 +7,7 @@ import { SerializedAdminPlan } from "@/components/admin/plan-dialog";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Subscription Plans Manager | Ironvale Admin",
+  title: "Plans | Ironvale Admin",
   description: "Create, modify, and archive membership plans and installment policies.",
 };
 
@@ -33,14 +33,11 @@ export default async function AdminPlansPage() {
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       {/* Page Header */}
       <div className="border-b border-border pb-6">
-        <span className="text-xs uppercase font-mono tracking-widest text-primary font-semibold">
-          Membership Administration
-        </span>
-        <h1 className="text-2xl sm:text-3xl font-black uppercase font-display tracking-tight text-foreground mt-1">
-          Subscription Plans Manager
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+          Plans
         </h1>
-        <p className="text-xs text-muted-foreground font-mono mt-1">
-          Configure gym access blocks, commitment discount percentages, and 50% partial payment eligibility.
+        <p className="text-sm text-muted-foreground mt-1">
+          Configure training blocks, rates, discounts, and partial payment options.
         </p>
       </div>
 
