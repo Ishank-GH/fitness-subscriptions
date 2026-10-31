@@ -19,8 +19,8 @@ export const dynamic = "force-dynamic";
 /**
  * Initiates a membership checkout. Generates an immutable transaction snapshot with
  * an atomic invoice sequence. If the purchase total is ₹0 (e.g., 100% discount),
- * the coupon is redeemed immediately and access begins. Otherwise, creates a PENDING
- * transaction where access and coupon redemption await initial payment
+ * the transaction is created first, the coupon redeemed after, and access activated immediately.
+ * Otherwise, creates a PENDING transaction where access and coupon redemption await initial payment.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -94,6 +94,7 @@ export async function POST(req: NextRequest) {
       durationMonths: plan.durationMonths,
       baseMonthlyPricePaise: plan.baseMonthlyPricePaise,
       discountPercentage: plan.discountPercentage,
+      allowPartialPayment: plan.allowPartialPayment,
     };
 
     const couponSnapshot: ICouponSnapshot | null = coupon
@@ -107,12 +108,8 @@ export async function POST(req: NextRequest) {
 
     const invoiceNumber = await Counter.getNextInvoiceNumber();
 
-    // Zero-total purchase: activates immediately and consumes coupon
+    // Zero-total purchase: create transaction first, then redeem coupon and activate subscription
     if (pricing.totalPaise === 0) {
-      if (coupon) {
-        await redeemCouponAtomically(coupon.code, now);
-      }
-
       const transaction = await Transaction.create({
         userId: user._id,
         planId: plan._id,
@@ -127,10 +124,19 @@ export async function POST(req: NextRequest) {
         payments: [],
       });
 
+      if (coupon) {
+        try {
+          await redeemCouponAtomically(coupon.code, now);
+        } catch (err) {
+          console.error("Failed to redeem coupon after zero-total subscription creation:", err);
+        }
+      }
+
       const startDate = now;
       const endDate = addMonths(startDate, plan.durationMonths);
 
       user.subscription = {
+        transactionId: transaction._id,
         planId: plan._id,
         startDate,
         endDate,

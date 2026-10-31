@@ -9,6 +9,7 @@ export interface IPlanSnapshot {
   durationMonths: number;
   baseMonthlyPricePaise: number;
   discountPercentage: number;
+  allowPartialPayment: boolean;
 }
 
 export interface ICouponSnapshot {
@@ -49,6 +50,7 @@ const PlanSnapshotSchema = new Schema<IPlanSnapshot>(
     durationMonths: { type: Number, required: true },
     baseMonthlyPricePaise: { type: Number, required: true },
     discountPercentage: { type: Number, required: true },
+    allowPartialPayment: { type: Boolean, required: true },
   },
   { _id: false }
 );

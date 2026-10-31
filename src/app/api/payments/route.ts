@@ -3,7 +3,6 @@ import { requireApiUser } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { User } from "@/lib/db/models/user";
 import { Transaction } from "@/lib/db/models/transaction";
-import { SubscriptionPlan } from "@/lib/db/models/subscription-plan";
 import { validatePayment } from "@/lib/pricing/engine";
 import { addMonths } from "@/lib/pricing/dates";
 import { redeemCouponAtomically } from "@/lib/pricing/coupon-redemption";
@@ -21,13 +20,8 @@ import {
 export const dynamic = "force-dynamic";
 
 /**
- * Processes a simulated payment for an existing transaction.
- * - Validates payment amount against the pricing engine rules.
- * - On first successful payment: atomically consumes any applied coupon and activates
- *   the member's subscription with calculated end date.
- * - On subsequent installment payments: decrements outstanding balance and shifts
- *   derived subscription status to ACTIVE once balance reaches zero.
- * - Preserves the invariant: amountPaidPaise === sum(payments[].amountPaise).
+ * Processes a simulated payment for an existing transaction using an atomic conditional update.
+ * Prevents double-submits from recording duplicate payments.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -75,9 +69,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Retrieve plan to determine partial payment eligibility
-    const plan = await SubscriptionPlan.findById(transaction.planId);
-    const allowPartialPayment = plan?.allowPartialPayment ?? false;
+    // Use allowPartialPayment directly from the snapshot
+    const allowPartialPayment = transaction.planSnapshot.allowPartialPayment;
 
     // Server-controlled payment amount for FULL choice to avoid trusting client figures
     const paymentPaise =
@@ -95,51 +88,61 @@ export async function POST(req: NextRequest) {
 
     const now = new Date();
 
-    // Atomically redeem coupon on first successful payment if one was applied
-    if (isFirstPayment && transaction.couponSnapshot?.code) {
-      await redeemCouponAtomically(transaction.couponSnapshot.code, now);
-    }
-
     // Generate unique simulated payment reference
     const reference = `SIM-${Date.now().toString(36).toUpperCase()}-${Math.random()
       .toString(36)
       .substring(2, 6)
       .toUpperCase()}`;
 
-    // Update balances and append to immutable payment history
-    const newAmountPaidPaise = transaction.amountPaidPaise + paymentPaise;
-    const newRemainingBalancePaise = transaction.totalAmountPaise - newAmountPaidPaise;
-    const newPaymentStatus = newRemainingBalancePaise === 0 ? "COMPLETED" : "PARTIAL";
+    const newPaid = transaction.amountPaidPaise + paymentPaise;
+    const newRemaining = transaction.totalAmountPaise - newPaid;
 
-    transaction.payments.push({
-      amountPaise: paymentPaise,
-      paidAt: now,
-      reference,
-    });
+    // Atomic conditional update to guard against concurrent double submission
+    const updated = await Transaction.findOneAndUpdate(
+      { _id: transaction._id, amountPaidPaise: transaction.amountPaidPaise },
+      {
+        $push: { payments: { amountPaise: paymentPaise, paidAt: now, reference } },
+        $set: {
+          amountPaidPaise: newPaid,
+          remainingBalancePaise: newRemaining,
+          paymentStatus: newRemaining === 0 ? "COMPLETED" : "PARTIAL",
+          ...(isFirstPayment ? { paymentDate: now } : {}),
+        },
+      },
+      { new: true }
+    );
 
-    transaction.amountPaidPaise = newAmountPaidPaise;
-    transaction.remainingBalancePaise = newRemainingBalancePaise;
-    transaction.paymentStatus = newPaymentStatus;
-    if (!transaction.paymentDate) {
-      transaction.paymentDate = now;
+    if (!updated) {
+      conflict("This payment was already processed. Refresh and try again.", "PAYMENT_CONFLICT");
     }
 
-    await transaction.save();
+    // Redeem coupon atomically after recording payment; do not fail payment if redemption fails
+    if (isFirstPayment && updated.couponSnapshot?.code) {
+      try {
+        await redeemCouponAtomically(updated.couponSnapshot.code, now);
+      } catch (err) {
+        console.error("Failed to redeem coupon after payment recorded:", err);
+      }
+    }
 
-    // Start membership on first payment, or settle balanceDuePaise on subsequent payment
+    // Start membership on first payment, or settle balanceDuePaise if transaction matches
     if (isFirstPayment) {
       const startDate = now;
-      const endDate = addMonths(startDate, transaction.planSnapshot.durationMonths);
+      const endDate = addMonths(startDate, updated.planSnapshot.durationMonths);
 
       user.subscription = {
-        planId: transaction.planId,
+        transactionId: updated._id,
+        planId: updated.planId,
         startDate,
         endDate,
-        balanceDuePaise: newRemainingBalancePaise,
+        balanceDuePaise: updated.remainingBalancePaise,
       };
       await user.save();
-    } else if (user.subscription) {
-      user.subscription.balanceDuePaise = newRemainingBalancePaise;
+    } else if (
+      user.subscription &&
+      user.subscription.transactionId?.toString() === updated._id.toString()
+    ) {
+      user.subscription.balanceDuePaise = updated.remainingBalancePaise;
       await user.save();
     }
 
@@ -149,16 +152,16 @@ export async function POST(req: NextRequest) {
     );
 
     return apiSuccess({
-      transactionId: transaction._id.toString(),
-      invoiceNumber: transaction.invoiceNumber,
+      transactionId: updated._id.toString(),
+      invoiceNumber: updated.invoiceNumber,
       payment: {
         amountPaise: paymentPaise,
         paidAt: now,
         reference,
       },
-      paymentStatus: transaction.paymentStatus,
-      amountPaidPaise: transaction.amountPaidPaise,
-      remainingBalancePaise: transaction.remainingBalancePaise,
+      paymentStatus: updated.paymentStatus,
+      amountPaidPaise: updated.amountPaidPaise,
+      remainingBalancePaise: updated.remainingBalancePaise,
       subscription: {
         startDate: user.subscription?.startDate,
         endDate: user.subscription?.endDate,
