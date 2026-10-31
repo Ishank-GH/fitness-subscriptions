@@ -36,10 +36,16 @@ export function ClaimsIndexList() {
 
   React.useEffect(() => {
     const mq = window.matchMedia("(hover: none)");
-    setIsTouch(mq.matches);
     const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches);
     mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
+    
+    // Defer initial state update to avoid synchronous cascading renders
+    const raf = requestAnimationFrame(() => setIsTouch(mq.matches));
+
+    return () => {
+      cancelAnimationFrame(raf);
+      mq.removeEventListener("change", handler);
+    };
   }, []);
 
   return (

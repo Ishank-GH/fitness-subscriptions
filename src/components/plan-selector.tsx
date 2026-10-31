@@ -37,7 +37,6 @@ export function PlanSelector({
   plans,
   hasActiveSubscription = false,
 }: PlanSelectorProps) {
-  // Default to 3-month (index 1) if available, otherwise first plan
   const defaultIndex = plans.findIndex((p) => p.durationMonths === 3);
   const [selectedIndex, setSelectedIndex] = React.useState(
     defaultIndex >= 0 ? defaultIndex : 0
@@ -45,7 +44,6 @@ export function PlanSelector({
 
   const selectedPlan = plans[selectedIndex] || plans[0];
 
-  // GSAP animated count-up for total price
   const totalTweenRef = React.useRef<{ value: number }>({
     value: selectedPlan.pricing.totalPaise,
   });
@@ -59,8 +57,9 @@ export function PlanSelector({
 
     if (prefersReduced) {
       totalTweenRef.current.value = target;
-      setDisplayTotal(target);
-      return;
+      // Defer synchronous state update
+      const raf = requestAnimationFrame(() => setDisplayTotal(target));
+      return () => cancelAnimationFrame(raf);
     }
 
     const tween = gsap.to(totalTweenRef.current, {
@@ -79,7 +78,6 @@ export function PlanSelector({
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
-      {/* Segmented Control */}
       <div
         role="tablist"
         aria-label="Training blocks"
@@ -118,7 +116,6 @@ export function PlanSelector({
         })}
       </div>
 
-      {/* Active Subscription Warning (if member is already enrolled) */}
       {hasActiveSubscription && (
         <div className="rounded-sm border border-border bg-card p-4 text-xs sm:text-sm flex items-start gap-3">
           <Info className="h-4 w-4 text-foreground shrink-0 mt-0.5" />
@@ -133,10 +130,8 @@ export function PlanSelector({
         </div>
       )}
 
-      {/* Live Price Breakdown & Feature Comparison Card */}
       <div className="rounded-sm border border-border bg-card p-6 sm:p-10 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Plan Scope and Features */}
           <div className="md:col-span-7 space-y-6">
             <div className="space-y-1.5">
               <h3 className="font-display font-bold text-2xl sm:text-3xl text-foreground tracking-tight">
@@ -163,7 +158,6 @@ export function PlanSelector({
             </div>
           </div>
 
-          {/* Right Column: Server-Calculated Line-Item Breakdown */}
           <div className="md:col-span-5 rounded-sm border border-border/80 bg-background/50 p-5 sm:p-6 space-y-4 font-mono text-xs">
             <span className="text-[11px] uppercase tracking-wider text-muted-foreground block font-medium">
               Price breakdown
@@ -194,7 +188,6 @@ export function PlanSelector({
               </div>
             </div>
 
-            {/* Total Display with Live GSAP Count-up */}
             <div className="pt-3 border-t border-border">
               <span className="text-[11px] text-muted-foreground uppercase tracking-wider block">
                 Total amount
@@ -204,7 +197,6 @@ export function PlanSelector({
               </div>
             </div>
 
-            {/* Partial Payment Installment Details */}
             {selectedPlan.allowPartialPayment && (
               <div className="rounded-sm border border-border bg-card p-3 space-y-1.5 text-[11px]">
                 <span className="font-semibold text-foreground block">
@@ -230,7 +222,6 @@ export function PlanSelector({
           </div>
         </div>
 
-        {/* Action Section */}
         <div className="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground font-mono">
             Access starts immediately on your first payment. No cancellation hurdles.

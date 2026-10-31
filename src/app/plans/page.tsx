@@ -1,37 +1,49 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { getAuthSession } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { SubscriptionPlan } from "@/lib/db/models/subscription-plan";
 import { User } from "@/lib/db/models/user";
 import { deriveSubscriptionStatus } from "@/lib/subscription-status";
-import { PlanCard, PlanItem } from "@/components/plan-card";
-import { Info, ShieldCheck, Zap, RefreshCw } from "lucide-react";
+import { calculatePricing } from "@/lib/pricing/engine";
+import { formatDurationMonths } from "@/lib/format";
+import {
+  PlanSelector,
+  SerializedPlanWithPricing,
+} from "@/components/plan-selector";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Membership plans | Ironvale",
+  description:
+    "Choose your training block. Pay in full or pay half upfront on multi-month plans.",
+};
+
 const DEFAULT_FEATURES: Record<number, string[]> = {
   1: [
-    "Full facility access (5:30 AM – 10:00 PM)",
-    "Competition barbells and bumper plates",
-    "Locker room and cold plunge access",
+    "Full facility access (05:30 – 22:00, 7 days)",
+    "Competition barbells and calibrated steel plates",
+    "Finnish cedar sauna and cold plunge access",
     "No initiation fees or lock-in contracts",
   ],
   3: [
     "All 1-Month Foundation benefits",
     "10% commitment discount",
-    "Partial payment: 50% upfront, rest before plan ends",
-    "Bi-weekly coach check-in and technique review",
-    "Priority platform reservation",
+    "Two-part payment: 50% upfront, rest before plan ends",
+    "Bi-weekly platform technique review",
+    "Priority platform reservation during peak hours",
   ],
   12: [
     "All 3-Month Progression benefits",
     "20% annual athlete discount",
-    "Partial payment: 50% upfront, rest before plan ends",
-    "Complimentary locker and kit storage",
-    "Dedicated program design and monthly 1-on-1 review",
+    "Two-part payment: 50% upfront, rest before plan ends",
+    "Dedicated gear and kit locker included",
+    "Monthly 1-on-1 programming review",
   ],
 };
 
-const FALLBACK_PLANS: PlanItem[] = [
+const FALLBACK_PLANS = [
   {
     id: "plan-1m",
     name: "1-Month Foundation",
@@ -39,7 +51,6 @@ const FALLBACK_PLANS: PlanItem[] = [
     baseMonthlyPricePaise: 450000,
     discountPercentage: 0,
     allowPartialPayment: false,
-    features: DEFAULT_FEATURES[1],
   },
   {
     id: "plan-3m",
@@ -48,8 +59,6 @@ const FALLBACK_PLANS: PlanItem[] = [
     baseMonthlyPricePaise: 400000,
     discountPercentage: 10,
     allowPartialPayment: true,
-    isPopular: true,
-    features: DEFAULT_FEATURES[3],
   },
   {
     id: "plan-12m",
@@ -58,7 +67,6 @@ const FALLBACK_PLANS: PlanItem[] = [
     baseMonthlyPricePaise: 350000,
     discountPercentage: 20,
     allowPartialPayment: true,
-    features: DEFAULT_FEATURES[12],
   },
 ];
 
@@ -69,7 +77,7 @@ export default async function PlansPage() {
     .sort({ durationMonths: 1 })
     .lean();
 
-  const plansToDisplay: PlanItem[] =
+  const plansSource =
     dbPlans.length > 0
       ? dbPlans.map((p) => ({
           id: p._id.toString(),
@@ -78,17 +86,47 @@ export default async function PlansPage() {
           baseMonthlyPricePaise: p.baseMonthlyPricePaise,
           discountPercentage: p.discountPercentage,
           allowPartialPayment: p.allowPartialPayment,
-          isPopular: p.durationMonths === 3,
-          features:
-            DEFAULT_FEATURES[p.durationMonths] || [
-              "Full facility access during gym operating hours",
-              "Access to free weights and Olympic lifting platforms",
-              "Locker room amenities",
-            ],
         }))
       : FALLBACK_PLANS;
 
-  // Check if current authenticated user already has an active subscription
+  // Run calculatePricing strictly on the server; pass plain serialized numbers
+  const serializedPlans: SerializedPlanWithPricing[] = plansSource.map((plan) => {
+    const pricing = calculatePricing({
+      plan: {
+        baseMonthlyPricePaise: plan.baseMonthlyPricePaise,
+        durationMonths: plan.durationMonths,
+        discountPercentage: plan.discountPercentage,
+        allowPartialPayment: plan.allowPartialPayment,
+      },
+    });
+
+    return {
+      id: plan.id,
+      name: plan.name,
+      durationMonths: plan.durationMonths,
+      durationText: formatDurationMonths(plan.durationMonths),
+      baseMonthlyPricePaise: plan.baseMonthlyPricePaise,
+      discountPercentage: plan.discountPercentage,
+      allowPartialPayment: plan.allowPartialPayment,
+      features:
+        DEFAULT_FEATURES[plan.durationMonths] || [
+          "Full facility access during gym operating hours",
+          "Competition barbells and Olympic lifting platforms",
+          "Locker room and cold plunge amenities",
+        ],
+      pricing: {
+        grossPaise: pricing.grossPaise,
+        commitmentDiscountPaise: pricing.commitmentDiscountPaise,
+        couponDiscountPaise: pricing.couponDiscountPaise,
+        totalPaise: pricing.totalPaise,
+        effectiveMonthlyPaise: pricing.effectiveMonthlyPaise,
+        minimumUpfrontPaise: pricing.minimumUpfrontPaise,
+        remainderPaise: pricing.remainderPaise,
+      },
+    };
+  });
+
+  // Verify whether the signed-in user already holds an active training block
   const session = await getAuthSession();
   let hasActiveSubscription = false;
 
@@ -107,92 +145,28 @@ export default async function PlansPage() {
 
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12">
-      {/* Header */}
-      <div className="text-center max-w-3xl mx-auto space-y-4">
-        <span className="text-xs font-mono uppercase tracking-widest text-primary font-bold">
-          Membership Tiers
-        </span>
-        <h1 className="text-3xl sm:text-5xl font-black uppercase font-display tracking-tight text-foreground">
-          Built For Dedicated Training
+      {/* Header (No uppercase eyebrow labels) */}
+      <div className="max-w-2xl space-y-3">
+        <Link
+          href="/"
+          className="font-mono text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Home
+        </Link>
+        <h1 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl tracking-tight text-foreground">
+          Membership plans
         </h1>
-        <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-          Transparent pricing in Indian Rupees with zero initiation fees. Choose full payment or flexible 50% upfront partial payment on multi-month training blocks.
+        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+          Transparent rates in Indian Rupees with zero initiation fees. Pay in full or choose a 50% upfront installment on multi-month training blocks.
         </p>
       </div>
 
-      {/* One-subscription policy alert */}
-      {hasActiveSubscription && (
-        <div className="max-w-3xl mx-auto rounded border border-primary/40 bg-primary/10 p-4 text-xs sm:text-sm flex items-start gap-3">
-          <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-          <div>
-            <p className="font-semibold text-foreground font-mono uppercase tracking-wider">
-              Active Subscription In Progress
-            </p>
-            <p className="text-muted-foreground mt-0.5 leading-relaxed">
-              You currently have an active membership. In accordance with Ironvale policy, athletes maintain one active plan at a time. You can choose a new tier once your existing plan expires.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Plans Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch pt-4">
-        {plansToDisplay.map((plan) => (
-          <PlanCard
-            key={plan.id}
-            plan={plan}
-            disabled={hasActiveSubscription}
-            disabledReason="Already Subscribed"
-            ctaText={session ? "Select Plan" : "Join Now"}
-          />
-        ))}
-      </div>
-
-      {/* Policy & Features Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t border-border">
-        <div className="flex items-start gap-3.5">
-          <div className="h-9 w-9 rounded bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
-            <Zap className="h-4 w-4" />
-          </div>
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-foreground font-display uppercase tracking-tight">
-              Instant Platform Access
-            </h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Your facility access activates immediately upon initial payment with digital access keys.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-3.5">
-          <div className="h-9 w-9 rounded bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
-            <RefreshCw className="h-4 w-4" />
-          </div>
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-foreground font-display uppercase tracking-tight">
-              Flexible 50% Upfront Split
-            </h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Pay half upfront on 3-month and 12-month commitments; clear the remaining balance before your plan expires.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-3.5">
-          <div className="h-9 w-9 rounded bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
-            <ShieldCheck className="h-4 w-4" />
-          </div>
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-foreground font-display uppercase tracking-tight">
-              Immutable Audit Billing
-            </h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Plan snapshots preserve your original purchase price permanently against future gym rate revisions.
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Interactive Plan Selector */}
+      <PlanSelector
+        plans={serializedPlans}
+        hasActiveSubscription={hasActiveSubscription}
+      />
     </div>
   );
 }
-

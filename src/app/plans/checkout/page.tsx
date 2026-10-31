@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, ShieldAlert, ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { SubscriptionPlan } from "@/lib/db/models/subscription-plan";
@@ -9,7 +9,6 @@ import { calculatePricing } from "@/lib/pricing/engine";
 import { deriveSubscriptionStatus } from "@/lib/subscription-status";
 import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CheckoutForm, CheckoutPlanData } from "@/components/checkout-form";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +43,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   if (hasActiveSubscription && user?.subscription) {
     return (
-      <div className="container mx-auto max-w-3xl px-4 py-16 sm:py-24 space-y-6">
+      <div className="container mx-auto max-w-2xl px-4 py-16 sm:py-24 space-y-6">
         <Link
           href="/plans"
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono"
@@ -53,43 +52,28 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
           Back to plans
         </Link>
 
-        <Card className="border-border bg-card">
-          <CardHeader className="border-b border-border/50 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-sm border border-border bg-muted flex items-center justify-center shrink-0">
-                <ShieldAlert className="h-5 w-5 text-foreground" />
-              </div>
-              <div>
-                <CardTitle className="text-xl font-display">
-                  Active subscription in progress
-                </CardTitle>
-                <p className="text-xs text-muted-foreground font-mono">
-                  Ironvale one-subscription policy
-                </p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Your account currently has an active training pass valid through{" "}
-              <strong className="text-foreground">{formatDate(user.subscription.endDate)}</strong>.
-              Athletes maintain one active membership block at a time.
-            </p>
-            <div className="pt-3 flex flex-wrap gap-3">
-              <Link href="/dashboard">
-                <Button size="sm" className="gap-2">
-                  Member dashboard
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/billing">
-                <Button variant="outline" size="sm">
-                  View invoices
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-sm border border-border bg-card p-6 sm:p-8 space-y-4">
+          <h2 className="text-xl font-display font-bold text-foreground">
+            Active subscription in progress
+          </h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Your account currently has an active training pass valid through{" "}
+            <strong className="text-foreground">{formatDate(user.subscription.endDate)}</strong>.
+            Athletes maintain one active membership block at a time.
+          </p>
+          <div className="pt-4 flex flex-wrap gap-3">
+            <Link href="/dashboard">
+              <Button size="sm" className="font-mono text-xs">
+                Member dashboard
+              </Button>
+            </Link>
+            <Link href="/billing">
+              <Button variant="outline" size="sm" className="font-mono text-xs">
+                View invoices
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -131,11 +115,11 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   };
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8">
+    <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8">
       <div>
         <Link
           href="/plans"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono mb-3"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono mb-4"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to plans
@@ -143,7 +127,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
         <h1 className="text-3xl sm:text-4xl font-bold font-display tracking-tight text-foreground">
           Complete registration
         </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-muted-foreground mt-2">
           Review training block terms, apply coupons, and choose full or 50% upfront payment.
         </p>
       </div>

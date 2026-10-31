@@ -2,21 +2,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import {
-  Tag,
-  Check,
-  X,
-  CreditCard,
-  ShieldCheck,
-  AlertCircle,
-  Loader2,
-  Calendar,
-  Sparkles,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { formatPaiseToRupees, formatDurationMonths, paiseToRupees, rupeesToPaise } from "@/lib/format";
 import type { PricingBreakdown } from "@/lib/pricing/engine";
 import { cn } from "@/lib/utils";
@@ -41,28 +28,21 @@ interface AppliedCouponState {
 export function CheckoutForm({ plan }: { plan: CheckoutPlanData }) {
   const router = useRouter();
 
-  // Pricing breakdown state
   const [pricing, setPricing] = React.useState<PricingBreakdown>(plan.pricing);
   const [appliedCoupon, setAppliedCoupon] = React.useState<AppliedCouponState | null>(null);
 
-  // Coupon input state
   const [couponInput, setCouponInput] = React.useState("");
   const [isValidatingCoupon, setIsValidatingCoupon] = React.useState(false);
   const [couponError, setCouponError] = React.useState<string | null>(null);
 
-  // Payment choice: FULL or PARTIAL
   const [paymentChoice, setPaymentChoice] = React.useState<"FULL" | "PARTIAL">("FULL");
-
-  // Custom partial upfront amount in Rupees (defaults to minimum upfront)
   const [customUpfrontRupees, setCustomUpfrontRupees] = React.useState<number>(
     paiseToRupees(plan.pricing.minimumUpfrontPaise)
   );
 
-  // Submission state
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
 
-  // Handle coupon validation
   async function handleApplyCoupon(e: React.FormEvent) {
     e.preventDefault();
     if (!couponInput.trim()) return;
@@ -96,7 +76,6 @@ export function CheckoutForm({ plan }: { plan: CheckoutPlanData }) {
         setCustomUpfrontRupees(paiseToRupees(updatedPricing.minimumUpfrontPaise));
       }
 
-      // If coupon reduces total to 0, force FULL choice
       if (updatedPricing.totalPaise === 0) {
         setPaymentChoice("FULL");
       }
@@ -107,7 +86,6 @@ export function CheckoutForm({ plan }: { plan: CheckoutPlanData }) {
     }
   }
 
-  // Handle removing applied coupon
   function handleRemoveCoupon() {
     setAppliedCoupon(null);
     setPricing(plan.pricing);
@@ -117,28 +95,17 @@ export function CheckoutForm({ plan }: { plan: CheckoutPlanData }) {
     setCouponError(null);
   }
 
-  // Calculate upfront and remainder in paise based on current selection
   const isZeroTotal = pricing.totalPaise === 0;
   const isPartialSelected = paymentChoice === "PARTIAL" && pricing.allowPartialPayment && !isZeroTotal;
-
-  const upfrontPaise = isPartialSelected
-    ? rupeesToPaise(Number(customUpfrontRupees) || 0)
-    : pricing.totalPaise;
-
+  const upfrontPaise = isPartialSelected ? rupeesToPaise(Number(customUpfrontRupees) || 0) : pricing.totalPaise;
   const remainderPaise = Math.max(0, pricing.totalPaise - upfrontPaise);
+  const isUpfrontValid = !isPartialSelected || (upfrontPaise >= pricing.minimumUpfrontPaise && upfrontPaise <= pricing.totalPaise);
 
-  // Input validation for partial payment
-  const isUpfrontValid =
-    !isPartialSelected ||
-    (upfrontPaise >= pricing.minimumUpfrontPaise && upfrontPaise <= pricing.totalPaise);
-
-  // Handle Complete Payment execution (Subscriptions API -> Payments API)
   async function handleCompleteCheckout() {
     setSubmitError(null);
     setIsSubmitting(true);
 
     try {
-      // 1. Create Transaction Snapshot
       const subRes = await fetch("/api/subscriptions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -154,13 +121,11 @@ export function CheckoutForm({ plan }: { plan: CheckoutPlanData }) {
         throw new Error(subData.error?.message || "Failed to initialize checkout transaction.");
       }
 
-      // If zero-total plan, subscription activated immediately in Step 12a
       if (subData.data.subscriptionActivated) {
         router.push("/dashboard?checkout=success");
         return;
       }
 
-      // 2. Process Simulated Payment
       const payRes = await fetch("/api/payments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -186,331 +151,221 @@ export function CheckoutForm({ plan }: { plan: CheckoutPlanData }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-      {/* Left Column: Plan Summary, Coupon, Payment Method */}
+      
+      {/* Left Column: Plan, Coupon, Payment */}
       <div className="lg:col-span-7 space-y-6">
-        {/* Plan Header Card */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4 border-b border-border/50">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
-                  Selected Training Block
-                </span>
-                <CardTitle className="text-2xl font-display uppercase tracking-tight mt-0.5">
-                  {plan.name}
-                </CardTitle>
-              </div>
-              <Badge variant="outline" className="font-mono text-xs">
-                {formatDurationMonths(plan.durationMonths)}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-5 space-y-4 text-sm">
-            <div className="flex items-center justify-between text-muted-foreground">
-              <span>Standard Base Rate</span>
-              <span className="font-mono text-foreground">
-                {formatPaiseToRupees(plan.baseMonthlyPricePaise)} / mo
-              </span>
+        
+        {/* Selected Plan */}
+        <div className="rounded-sm border border-border bg-card p-5 sm:p-6 space-y-4">
+          <h2 className="font-display font-bold text-xl text-foreground">Selected plan</h2>
+          <div className="space-y-2 text-sm font-mono">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{plan.name} ({formatDurationMonths(plan.durationMonths)})</span>
+              <span className="text-foreground tabular-nums">{formatPaiseToRupees(plan.baseMonthlyPricePaise)} / mo</span>
             </div>
             {plan.discountPercentage > 0 && (
-              <div className="flex items-center justify-between text-emerald-400">
-                <span className="flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4" />
-                  {plan.discountPercentage}% Multi-month Discount
-                </span>
-                <span className="font-mono font-semibold">
-                  -{formatPaiseToRupees(pricing.commitmentDiscountPaise)}
-                </span>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Commitment discount ({plan.discountPercentage}%)</span>
+                <span className="text-foreground tabular-nums">-{formatPaiseToRupees(pricing.commitmentDiscountPaise)}</span>
               </div>
             )}
-            <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-primary" />
-                Access begins on first successful payment
-              </span>
-              <span>No initiation fees</span>
+            <div className="pt-3 mt-3 border-t border-border/50 text-xs text-muted-foreground font-sans">
+              Access begins on your first successful payment. No initiation fees.
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Coupon Discount Section */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-display uppercase tracking-tight flex items-center gap-2">
-              <Tag className="h-4 w-4 text-primary" />
-              Promotional Code
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {appliedCoupon ? (
-              <div className="flex items-center justify-between rounded border border-emerald-500/40 bg-emerald-500/10 p-3">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-emerald-400 text-sm">
-                      {appliedCoupon.code}
-                    </span>
-                    <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 text-[10px] py-0">
-                      Applied
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Saved {formatPaiseToRupees(pricing.couponDiscountPaise)} on this training block
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRemoveCoupon}
-                  className="h-8 text-xs text-muted-foreground hover:text-destructive"
-                >
-                  <X className="h-3.5 w-3.5 mr-1" />
-                  Remove
-                </Button>
+        {/* Promotional Code */}
+        <div className="rounded-sm border border-border bg-card p-5 sm:p-6 space-y-4">
+          <h2 className="font-display font-bold text-xl text-foreground">Promotional code</h2>
+          {appliedCoupon ? (
+            <div className="flex items-center justify-between rounded-sm border border-border bg-background p-3">
+              <div>
+                <span className="font-mono font-bold text-foreground text-sm block">
+                  {appliedCoupon.code}
+                </span>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Saved {formatPaiseToRupees(pricing.couponDiscountPaise)} on this training block
+                </p>
               </div>
-            ) : (
-              <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="e.g. WELCOME10"
-                  value={couponInput}
-                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                  disabled={isValidatingCoupon}
-                  className="font-mono uppercase text-xs sm:text-sm uppercase placeholder:normal-case"
-                />
-                <Button
-                  type="submit"
-                  variant="outline"
-                  size="default"
-                  disabled={!couponInput.trim() || isValidatingCoupon}
-                  className="shrink-0"
-                >
-                  {isValidatingCoupon ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Apply"
-                  )}
-                </Button>
-              </form>
-            )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleRemoveCoupon}
+                className="text-xs font-mono"
+              >
+                Remove
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleApplyCoupon} className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Enter code"
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                disabled={isValidatingCoupon}
+                className="font-mono text-sm uppercase placeholder:normal-case placeholder:font-sans"
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={!couponInput.trim() || isValidatingCoupon}
+              >
+                Apply
+              </Button>
+            </form>
+          )}
+          {couponError && <p className="text-xs text-destructive">{couponError}</p>}
+        </div>
 
-            {couponError && (
-              <p className="text-xs text-destructive flex items-center gap-1.5 pt-1">
-                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                {couponError}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Payment Type Selection (Full vs 50% Upfront Installment) */}
+        {/* Payment Options */}
         {pricing.allowPartialPayment && !isZeroTotal && (
-          <Card className="bg-card border-border">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-display uppercase tracking-tight flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-primary" />
-                Payment Options
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPaymentChoice("FULL")}
-                  className={cn(
-                    "rounded border p-3.5 text-left transition-all",
-                    paymentChoice === "FULL"
-                      ? "border-primary bg-primary/10 shadow-sm"
-                      : "border-border hover:border-muted-foreground/30 bg-muted/20"
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-sm text-foreground">Pay in Full</span>
-                    {paymentChoice === "FULL" && <Check className="h-4 w-4 text-primary" />}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Single payment of {formatPaiseToRupees(pricing.totalPaise)}. Zero balance due.
-                  </p>
-                </button>
+          <div className="rounded-sm border border-border bg-card p-5 sm:p-6 space-y-4">
+            <h2 className="font-display font-bold text-xl text-foreground">Payment options</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setPaymentChoice("FULL")}
+                className={cn(
+                  "rounded-sm border p-4 text-left transition-colors",
+                  paymentChoice === "FULL"
+                    ? "border-foreground bg-background"
+                    : "border-border hover:bg-background/50"
+                )}
+              >
+                <div className="font-semibold text-sm text-foreground">Pay in full</div>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  Single payment of {formatPaiseToRupees(pricing.totalPaise)}. Zero balance due.
+                </p>
+              </button>
 
-                <button
-                  type="button"
-                  onClick={() => setPaymentChoice("PARTIAL")}
-                  className={cn(
-                    "rounded border p-3.5 text-left transition-all",
-                    paymentChoice === "PARTIAL"
-                      ? "border-primary bg-primary/10 shadow-sm"
-                      : "border-border hover:border-muted-foreground/30 bg-muted/20"
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-sm text-foreground">50% Upfront Split</span>
-                    {paymentChoice === "PARTIAL" && <Check className="h-4 w-4 text-primary" />}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Pay minimum {formatPaiseToRupees(pricing.minimumUpfrontPaise)} upfront. Settle balance later.
-                  </p>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setPaymentChoice("PARTIAL")}
+                className={cn(
+                  "rounded-sm border p-4 text-left transition-colors",
+                  paymentChoice === "PARTIAL"
+                    ? "border-foreground bg-background"
+                    : "border-border hover:bg-background/50"
+                )}
+              >
+                <div className="font-semibold text-sm text-foreground">50% upfront split</div>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  Pay minimum {formatPaiseToRupees(pricing.minimumUpfrontPaise)} today. Settle balance later.
+                </p>
+              </button>
+            </div>
 
-              {/* Installment Amount Input */}
-              {paymentChoice === "PARTIAL" && (
-                <div className="rounded border border-border/70 bg-muted/20 p-4 space-y-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <label htmlFor="upfrontAmount" className="font-medium text-foreground">
-                      Upfront Payment Amount (₹)
-                    </label>
-                    <span className="text-muted-foreground font-mono">
-                      Min: {formatPaiseToRupees(pricing.minimumUpfrontPaise)}
-                    </span>
-                  </div>
-
-                  <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-sm text-muted-foreground font-semibold">
-                      ₹
-                    </span>
-                    <Input
-                      id="upfrontAmount"
-                      type="number"
-                      min={paiseToRupees(pricing.minimumUpfrontPaise)}
-                      max={paiseToRupees(pricing.totalPaise)}
-                      step="1"
-                      value={customUpfrontRupees}
-                      onChange={(e) => setCustomUpfrontRupees(Number(e.target.value))}
-                      className="pl-7 font-mono font-semibold"
-                    />
-                  </div>
-
-                  {!isUpfrontValid ? (
-                    <p className="text-xs text-destructive">
-                      Upfront amount must be between {formatPaiseToRupees(pricing.minimumUpfrontPaise)} and {formatPaiseToRupees(pricing.totalPaise)}.
-                    </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      Remaining balance of{" "}
-                      <strong className="text-amber-400 font-mono">
-                        {formatPaiseToRupees(remainderPaise)}
-                      </strong>{" "}
-                      payable anytime from your dashboard before your membership block ends.
-                    </p>
-                  )}
+            {paymentChoice === "PARTIAL" && (
+              <div className="rounded-sm border border-border bg-background p-4 space-y-3 mt-2">
+                <div className="flex items-center justify-between text-xs">
+                  <label htmlFor="upfrontAmount" className="font-medium text-foreground">
+                    Upfront payment (₹)
+                  </label>
+                  <span className="text-muted-foreground font-mono">
+                    Min: {formatPaiseToRupees(pricing.minimumUpfrontPaise)}
+                  </span>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-sm text-muted-foreground font-mono">₹</span>
+                  <Input
+                    id="upfrontAmount"
+                    type="number"
+                    min={paiseToRupees(pricing.minimumUpfrontPaise)}
+                    max={paiseToRupees(pricing.totalPaise)}
+                    step="1"
+                    value={customUpfrontRupees}
+                    onChange={(e) => setCustomUpfrontRupees(Number(e.target.value))}
+                    className="pl-7 font-mono font-semibold"
+                  />
+                </div>
+                {!isUpfrontValid ? (
+                  <p className="text-xs text-destructive">
+                    Must be between {formatPaiseToRupees(pricing.minimumUpfrontPaise)} and {formatPaiseToRupees(pricing.totalPaise)}.
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Remaining balance of <strong className="font-mono font-semibold text-foreground">{formatPaiseToRupees(remainderPaise)}</strong> is payable anytime from your dashboard.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         )}
 
-        {/* Simulated Sandbox Disclosure */}
-        <div className="rounded border border-primary/20 bg-primary/5 p-4 flex items-start gap-3">
-          <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-          <div className="space-y-1 text-xs">
-            <span className="font-semibold text-foreground block font-mono uppercase tracking-wider">
-              Simulated Platform Gateway
-            </span>
-            <p className="text-muted-foreground leading-relaxed">
-              No real bank or card information is collected. Clicking the button below simulates an immediate cleared transaction, generates an official immutable invoice, and activates your Ironvale access.
-            </p>
-          </div>
+        {/* Sandbox Note */}
+        <div className="text-xs text-muted-foreground bg-card p-4 rounded-sm border border-border">
+          <strong className="text-foreground block mb-1 font-mono uppercase tracking-wider">Test environment</strong>
+          No real card information is collected. Clicking the button below simulates a cleared transaction and activates your access.
         </div>
       </div>
 
-      {/* Right Column: Order Summary & Checkout Action */}
+      {/* Right Column: Order Summary */}
       <div className="lg:col-span-5 sticky top-24">
-        <Card className="bg-card border-border shadow-lg">
-          <CardHeader className="pb-4 border-b border-border/50">
-            <CardTitle className="text-lg font-display uppercase tracking-tight">
-              Order Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-5 space-y-4">
-            <div className="space-y-2.5 text-sm">
-              <div className="flex justify-between text-muted-foreground">
-                <span>{plan.name} Gross</span>
-                <span className="font-mono text-foreground">
-                  {formatPaiseToRupees(pricing.grossPaise)}
-                </span>
-              </div>
-
-              {pricing.commitmentDiscountPaise > 0 && (
-                <div className="flex justify-between text-emerald-400">
-                  <span>Commitment Discount</span>
-                  <span className="font-mono">
-                    -{formatPaiseToRupees(pricing.commitmentDiscountPaise)}
-                  </span>
-                </div>
-              )}
-
-              {pricing.couponDiscountPaise > 0 && (
-                <div className="flex justify-between text-emerald-400">
-                  <span>Coupon ({appliedCoupon?.code})</span>
-                  <span className="font-mono">
-                    -{formatPaiseToRupees(pricing.couponDiscountPaise)}
-                  </span>
-                </div>
-              )}
-
-              <div className="pt-2 border-t border-border/60 flex justify-between font-bold text-foreground">
-                <span>Total Plan Price</span>
-                <span className="font-mono text-base">
-                  {formatPaiseToRupees(pricing.totalPaise)}
-                </span>
-              </div>
+        <div className="rounded-sm border border-border bg-card p-5 sm:p-6 space-y-6">
+          <h2 className="font-display font-bold text-xl text-foreground border-b border-border pb-4">Order summary</h2>
+          
+          <div className="space-y-3 font-mono text-sm">
+            <div className="flex justify-between text-muted-foreground">
+              <span>Gross</span>
+              <span className="tabular-nums">{formatPaiseToRupees(pricing.grossPaise)}</span>
             </div>
-
-            {/* Split breakdown if partial selected */}
-            {isPartialSelected && (
-              <div className="rounded border border-amber-500/30 bg-amber-500/5 p-3 space-y-2 text-xs">
-                <div className="flex justify-between font-semibold text-amber-400">
-                  <span>Due Today (Upfront)</span>
-                  <span className="font-mono text-sm">{formatPaiseToRupees(upfrontPaise)}</span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Remaining Balance</span>
-                  <span className="font-mono">{formatPaiseToRupees(remainderPaise)}</span>
-                </div>
+            {pricing.commitmentDiscountPaise > 0 && (
+              <div className="flex justify-between text-foreground">
+                <span>Discount</span>
+                <span className="tabular-nums">-{formatPaiseToRupees(pricing.commitmentDiscountPaise)}</span>
               </div>
             )}
+            {pricing.couponDiscountPaise > 0 && (
+              <div className="flex justify-between text-foreground">
+                <span>Coupon</span>
+                <span className="tabular-nums">-{formatPaiseToRupees(pricing.couponDiscountPaise)}</span>
+              </div>
+            )}
+            <div className="pt-3 border-t border-border/60 flex justify-between font-bold text-foreground">
+              <span className="font-sans">Total plan price</span>
+              <span className="tabular-nums">{formatPaiseToRupees(pricing.totalPaise)}</span>
+            </div>
+          </div>
 
-            {/* Amount Due Today Callout */}
-            <div className="rounded bg-muted/40 p-4 border border-border/60">
+          {isPartialSelected && (
+            <div className="rounded-sm border border-border bg-background p-4 space-y-2 text-sm font-mono">
+              <div className="flex justify-between font-semibold text-foreground">
+                <span className="font-sans">Due today</span>
+                <span className="tabular-nums">{formatPaiseToRupees(upfrontPaise)}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span className="font-sans text-xs">Remaining balance</span>
+                <span className="tabular-nums text-xs">{formatPaiseToRupees(remainderPaise)}</span>
+              </div>
+            </div>
+          )}
+
+          {!isPartialSelected && (
+            <div className="rounded-sm border border-border bg-background p-4">
               <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground block">
-                Total Due Today
+                Total due today
               </span>
-              <div className="text-3xl font-black font-display text-foreground mt-0.5">
+              <div className="text-3xl font-bold font-display text-foreground mt-1 tabular-nums">
                 {formatPaiseToRupees(upfrontPaise)}
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1">
-                Effective: {formatPaiseToRupees(pricing.effectiveMonthlyPaise)} / month
-              </p>
             </div>
+          )}
 
-            {submitError && (
-              <div className="rounded border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>{submitError}</span>
-              </div>
-            )}
+          {submitError && <div className="text-xs text-destructive">{submitError}</div>}
 
-            <Button
-              type="button"
-              size="lg"
-              disabled={isSubmitting || !isUpfrontValid}
-              onClick={handleCompleteCheckout}
-              className="w-full font-bold uppercase tracking-wider text-sm gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Processing Activation...
-                </>
-              ) : isZeroTotal ? (
-                "Activate Membership (₹0)"
-              ) : (
-                `Pay & Activate Pass (${formatPaiseToRupees(upfrontPaise)})`
-              )}
-            </Button>
-          </CardContent>
-        </Card>
+          <Button
+            type="button"
+            size="lg"
+            disabled={isSubmitting || !isUpfrontValid}
+            onClick={handleCompleteCheckout}
+            className="w-full font-mono text-xs"
+          >
+            {isSubmitting ? "Processing..." : isZeroTotal ? "Activate membership (₹0)" : `Pay ${formatPaiseToRupees(upfrontPaise)}`}
+          </Button>
+        </div>
       </div>
     </div>
   );
