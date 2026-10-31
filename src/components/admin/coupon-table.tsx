@@ -5,13 +5,19 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { formatPaiseToRupees, formatDate } from "@/lib/format";
-import { CouponDialog, SerializedAdminCoupon } from "@/components/admin/coupon-dialog";
+import {
+  CouponDialog,
+  SerializedAdminCoupon,
+} from "@/components/admin/coupon-dialog";
 
 export function CouponTable({ coupons }: { coupons: SerializedAdminCoupon[] }) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [editingCoupon, setEditingCoupon] = React.useState<SerializedAdminCoupon | null>(null);
-  const [actionLoadingId, setActionLoadingId] = React.useState<string | null>(null);
+  const [editingCoupon, setEditingCoupon] =
+    React.useState<SerializedAdminCoupon | null>(null);
+  const [actionLoadingId, setActionLoadingId] = React.useState<string | null>(
+    null,
+  );
 
   function handleOpenCreate() {
     setEditingCoupon(null);
@@ -43,10 +49,18 @@ export function CouponTable({ coupons }: { coupons: SerializedAdminCoupon[] }) {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="text-xl font-bold font-display text-foreground">Coupons ({coupons.length})</h2>
-          <p className="text-sm text-muted-foreground">Active and archived discount codes.</p>
+          <h2 className="text-xl font-bold font-display text-foreground">
+            Coupons ({coupons.length})
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Active and archived discount codes.
+          </p>
         </div>
-        <Button onClick={handleOpenCreate} size="sm" className="font-mono text-xs">
+        <Button
+          onClick={handleOpenCreate}
+          size="sm"
+          className="font-mono text-xs"
+        >
           New coupon
         </Button>
       </div>
@@ -74,29 +88,62 @@ export function CouponTable({ coupons }: { coupons: SerializedAdminCoupon[] }) {
               <tbody className="divide-y divide-border font-mono text-xs">
                 {coupons.map((c) => {
                   const isExpired = new Date(c.validUntil) <= now;
-                  const isMaxedOut = c.maxRedemptions !== null && c.currentRedemptions >= c.maxRedemptions;
+                  const isMaxedOut =
+                    c.maxRedemptions !== null &&
+                    c.currentRedemptions >= c.maxRedemptions;
                   const isLoading = actionLoadingId === c.id;
 
                   return (
-                    <tr key={c.id} className={c.isActive && !isExpired && !isMaxedOut ? "hover:bg-background/50" : "opacity-50"}>
-                      <td className="py-3.5 px-5 font-bold text-foreground">{c.code}</td>
+                    <tr
+                      key={c.id}
+                      className={
+                        c.isActive && !isExpired && !isMaxedOut
+                          ? "hover:bg-background/50"
+                          : "opacity-50"
+                      }
+                    >
+                      <td className="py-3.5 px-5 font-bold text-foreground">
+                        {c.code}
+                      </td>
                       <td className="py-3.5 px-5 text-foreground tabular-nums">
-                        {c.type === "PERCENTAGE" ? `${c.percentage}%` : formatPaiseToRupees(c.flatAmountPaise)}
+                        {c.type === "PERCENTAGE"
+                          ? `${c.percentage}%`
+                          : formatPaiseToRupees(c.flatAmountPaise)}
                       </td>
                       <td className="py-3.5 px-5 text-muted-foreground tabular-nums">
-                        {c.currentRedemptions} / {c.maxRedemptions !== null ? c.maxRedemptions : "∞"}
+                        {c.currentRedemptions} /{" "}
+                        {c.maxRedemptions !== null ? c.maxRedemptions : "∞"}
                       </td>
                       <td className="py-3.5 px-5 text-muted-foreground tabular-nums">
                         {formatDate(c.validUntil)}
                       </td>
                       <td className="py-3.5 px-5 text-foreground">
-                        {!c.isActive ? "Archived" : isExpired ? "Expired" : isMaxedOut ? "Exhausted" : "Active"}
+                        {!c.isActive
+                          ? "Archived"
+                          : isExpired
+                            ? "Expired"
+                            : isMaxedOut
+                              ? "Exhausted"
+                              : "Active"}
                       </td>
                       <td className="py-3.5 px-5 text-right">
                         <div className="flex items-center justify-end gap-3">
-                          <button onClick={() => handleOpenEdit(c)} className="text-muted-foreground hover:text-foreground">Edit</button>
-                          <button disabled={isLoading} onClick={() => handleToggleStatus(c)} className="text-muted-foreground hover:text-foreground">
-                            {isLoading ? "..." : c.isActive ? "Archive" : "Restore"}
+                          <button
+                            onClick={() => handleOpenEdit(c)}
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            disabled={isLoading}
+                            onClick={() => handleToggleStatus(c)}
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            {isLoading
+                              ? "..."
+                              : c.isActive
+                                ? "Archive"
+                                : "Restore"}
                           </button>
                         </div>
                       </td>

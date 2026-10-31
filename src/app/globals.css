@@ -4,49 +4,45 @@
 
 @layer base {
   :root {
-    /* Exact art direction palette */
-    --background: #DAD8D1;
+    --background: #dad8d1;
     --foreground: #141517;
 
-    /* Raised surfaces: #E5E3DC */
-    --card: #E5E3DC;
+    --card: #e5e3dc;
     --card-foreground: #141517;
 
-    --popover: #E5E3DC;
+    --popover: #e5e3dc;
     --popover-foreground: #141517;
 
     --primary: #141517;
-    --primary-foreground: #DAD8D1;
+    --primary-foreground: #dad8d1;
 
-    --secondary: #D7D5CD;
+    --secondary: #d7d5cd;
     --secondary-foreground: #141517;
 
-    --muted: #D7D5CD;
-    --muted-foreground: #4B4C4E;
+    --muted: #d7d5cd;
+    --muted-foreground: #4b4c4e;
 
-    --accent: #D0CEC6;
+    --accent: #d0cec6;
     --accent-foreground: #141517;
 
-    --destructive: #D7261E;
-    --destructive-foreground: #FFFFFF;
+    --destructive: #d7261e;
+    --destructive-foreground: #e8e6e0;
 
-    --border: #B4B1A8;
-    --input: #B4B1A8;
+    --border: #b4b1a8;
+    --input: #b4b1a8;
     --ring: #141517;
 
     --radius: 0.125rem;
 
-    /* Competition plates (fills and borders only) */
-    --plate-red: #D7261E;
-    --plate-blue: #1D4FD8;
-    --plate-yellow: #F2C230;
-    --plate-green: #1F9D55;
+    --plate-red: #d7261e;
+    --plate-blue: #1d4fd8;
+    --plate-yellow: #f2c230;
+    --plate-green: #1f9d55;
 
-    /* Dark stage tokens for hero and footer */
-    --stage-bg: #0E0F11;
-    --stage-fg: #E8E6E0;
-    --stage-muted: #8E9094;
-    --stage-border: #25272B;
+    --stage-bg: #0e0f11;
+    --stage-fg: #e8e6e0;
+    --stage-muted: #8e9094;
+    --stage-border: #25272b;
   }
 }
 
@@ -58,7 +54,12 @@
     @apply bg-background text-foreground antialiased selection:bg-foreground selection:text-background;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
     letter-spacing: -0.03em;
   }
@@ -67,7 +68,6 @@
   }
 }
 
-/* Light raised surfaces for Clerk authentication components */
 .cl-card {
   background-color: #e5e3dc !important;
   border: 1px solid #b4b1a8 !important;
@@ -75,48 +75,39 @@
   box-shadow: none !important;
   border-radius: 0.125rem !important;
 }
-
 .cl-headerTitle {
   color: #141517 !important;
   font-family: var(--font-display), sans-serif !important;
   letter-spacing: -0.02em !important;
 }
-
 .cl-headerSubtitle {
   color: #4b4c4e !important;
 }
-
 .cl-socialButtonsBlockButton {
   background-color: #dad8d1 !important;
   border: 1px solid #b4b1a8 !important;
   color: #141517 !important;
   box-shadow: none !important;
 }
-
 .cl-socialButtonsBlockButton:hover {
   background-color: #d0cec6 !important;
 }
-
 .cl-socialButtonsBlockButtonText {
   color: #141517 !important;
 }
-
 .cl-dividerLine {
   background-color: #b4b1a8 !important;
 }
-
 .cl-dividerText {
   color: #4b4c4e !important;
   font-family: var(--font-mono), monospace !important;
   font-size: 0.75rem !important;
 }
-
 .cl-formFieldLabel {
   color: #141517 !important;
   font-size: 0.8rem !important;
   font-weight: 500 !important;
 }
-
 .cl-formFieldInput {
   background-color: #dad8d1 !important;
   border: 1px solid #b4b1a8 !important;
@@ -124,12 +115,10 @@
   border-radius: 0.125rem !important;
   box-shadow: none !important;
 }
-
 .cl-formFieldInput:focus {
   border-color: #141517 !important;
   box-shadow: 0 0 0 1px #141517 !important;
 }
-
 .cl-formButtonPrimary {
   background-color: #141517 !important;
   color: #dad8d1 !important;
@@ -138,24 +127,19 @@
   border-radius: 0.125rem !important;
   box-shadow: none !important;
 }
-
 .cl-formButtonPrimary:hover {
   background-color: #26282b !important;
 }
-
 .cl-footerActionText {
   color: #4b4c4e !important;
 }
-
 .cl-footerActionLink {
   color: #141517 !important;
   font-weight: 600 !important;
 }
-
 .cl-footerActionLink:hover {
   text-decoration: underline !important;
 }
-
 .cl-footer {
   background: transparent !important;
   border-top: 1px solid #b4b1a8 !important;
@@ -171,23 +155,21 @@
   letter-spacing: -0.02em;
   color: transparent;
   -webkit-text-stroke: 1.5px #5a5c60;
-  transition: color 0.3s, -webkit-text-stroke-color 0.3s;
+  transition:
+    color 0.3s,
+    -webkit-text-stroke-color 0.3s;
 }
 .hero-lift:hover {
   color: #d7261e;
   -webkit-text-stroke-color: #d7261e;
 }
 
-/* 
-   Micro-interactions
-/* Nav links: underline enters from left (320ms), exits to right */
 .nav-link-underline {
   position: relative;
   display: inline-flex;
   align-items: center;
   padding-bottom: 2px;
 }
-
 .nav-link-underline::after {
   content: "";
   position: absolute;
@@ -200,7 +182,6 @@
   transform-origin: right center;
   transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-
 .nav-link-underline:hover::after,
 .nav-link-underline:focus-visible::after,
 .nav-link-underline[data-active="true"]::after {
@@ -208,46 +189,40 @@
   transform-origin: left center;
 }
 
-/* Primary buttons: fill sweeps up from bottom (380ms), text swaps, arrow slides 4px (250ms) */
 .btn-primary-sweep {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  transition: color 380ms cubic-bezier(0.22, 1, 0.36, 1),
-              background-color 380ms cubic-bezier(0.22, 1, 0.36, 1),
-              border-color 380ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    color 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 380ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-
 .btn-primary-sweep::before {
   content: "";
   position: absolute;
   inset: 0;
-  background-color: var(--destructive); /* #D7261E accent red */
+  background-color: var(--destructive);
   transform: translateY(101%);
   transition: transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
   z-index: -1;
 }
-
 .btn-primary-sweep:hover::before,
 .btn-primary-sweep:focus-visible::before {
   transform: translateY(0);
 }
-
 .btn-primary-sweep:hover,
 .btn-primary-sweep:focus-visible {
-  color: #FFFFFF !important;
+  color: #e8e6e0 !important;
 }
-
 .btn-primary-sweep svg:not(.animate-spin) {
   transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-
 .btn-primary-sweep:hover svg:not(.animate-spin),
 .btn-primary-sweep:focus-visible svg:not(.animate-spin) {
   transform: translateX(4px);
 }
 
-/* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   .nav-link-underline::after,
   .btn-primary-sweep,
