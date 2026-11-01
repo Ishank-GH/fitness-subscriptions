@@ -82,18 +82,16 @@ Plans and coupons are archived (`isActive: false`), never deleted, so old transa
 
 - **Double submit on payments.** Two quick clicks could both read the same balance and record two payments. The payment now uses a conditional update on the amount already paid, and the losing request gets a clear conflict error.
 - **Month-end dates.** A naive add-a-month turns 31 January into 3 March. A date helper now clamps to the last day of the month, with tests for leap years and year rollover.
-- **Coupon redeemed too early or twice.** Redemption moved to the first successful payment and became a single atomic update.
 - **Old balance overwriting a new subscription.** Paying an old partial invoice could overwrite the balance of a newer subscription. The subscription now stores which transaction it belongs to, and only that transaction updates it.
-- **Partial-payment rule read from the live plan.** It is now read from the snapshot, so later plan edits cannot change an existing invoice.
+- **Partial-payment rule read from the live plan.** It now reads from the snapshot, so later plan edits cannot change an existing invoice.
 - **Revenue counted forgiven amounts.** I spotted it on the admin overview, where collected revenue included an invoice that had been closed by an override. An override adds an `ADMIN_OVERRIDE` payment so the totals stay consistent, and revenue now excludes it and shows it separately as written off.
 - **Error messages leaked internals.** Unexpected errors are logged on the server and return a generic message.
 - **Display rounding.** Amounts such as ₹5,400.50 were shown rounded. They now show exact paise.
-- **Hard-coded sample plans.** A fallback list of fake plans appeared when the database was empty, with ids that could not be bought. It is gone and an empty state is shown instead.
 
 ## Assumptions and limits
 
 - Payments are simulated: a payment is recorded with a reference like `SIM-...`.
-- Partial payment means a minimum of 50% on the first payment (configurable in the pricing module), then any amounts up to the balance before the plan ends. There is no fixed installment schedule.
+- Partial payment means a minimum of 50% on the first payment, then any amounts up to the balance before the plan ends. There is no fixed installment schedule.
 - One active subscription per member. A new purchase is blocked while one is `ACTIVE` or `PARTIAL` and allowed after it expires. A transaction left `PENDING` does not block anything.
 - A zero total (for example after a 100% coupon) is treated as paid immediately.
-- One coupon per purchase. Times are shown in India time.
+- One coupon per purchase. Times are shown in Indian time (IST).

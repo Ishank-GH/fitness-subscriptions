@@ -36,8 +36,8 @@ export function CheckoutForm({ plan }: { plan: CheckoutPlanData }) {
   const [couponError, setCouponError] = React.useState<string | null>(null);
 
   const [paymentChoice, setPaymentChoice] = React.useState<"FULL" | "PARTIAL">("FULL");
-  const [customUpfrontRupees, setCustomUpfrontRupees] = React.useState<number>(
-    paiseToRupees(plan.pricing.minimumUpfrontPaise)
+  const [customUpfrontRupees, setCustomUpfrontRupees] = React.useState<string>(
+    String(paiseToRupees(plan.pricing.minimumUpfrontPaise))
   );
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -73,7 +73,7 @@ export function CheckoutForm({ plan }: { plan: CheckoutPlanData }) {
       setCouponInput("");
 
       if (updatedPricing.allowPartialPayment) {
-        setCustomUpfrontRupees(paiseToRupees(updatedPricing.minimumUpfrontPaise));
+        setCustomUpfrontRupees(String(paiseToRupees(updatedPricing.minimumUpfrontPaise)));
       }
 
       if (updatedPricing.totalPaise === 0) {
@@ -90,15 +90,14 @@ export function CheckoutForm({ plan }: { plan: CheckoutPlanData }) {
     setAppliedCoupon(null);
     setPricing(plan.pricing);
     if (plan.pricing.allowPartialPayment) {
-      setCustomUpfrontRupees(paiseToRupees(plan.pricing.minimumUpfrontPaise));
+      setCustomUpfrontRupees(String(paiseToRupees(plan.pricing.minimumUpfrontPaise)));
     }
     setCouponError(null);
   }
 
   const isZeroTotal = pricing.totalPaise === 0;
   const isPartialSelected = paymentChoice === "PARTIAL" && pricing.allowPartialPayment && !isZeroTotal;
-  const upfrontPaise = isPartialSelected ? rupeesToPaise(Number(customUpfrontRupees) || 0) : pricing.totalPaise;
-  const remainderPaise = Math.max(0, pricing.totalPaise - upfrontPaise);
+  const upfrontPaise = isPartialSelected ? rupeesToPaise(Number(customUpfrontRupees) || 0) : pricing.totalPaise;  const remainderPaise = Math.max(0, pricing.totalPaise - upfrontPaise);
   const isUpfrontValid = !isPartialSelected || (upfrontPaise >= pricing.minimumUpfrontPaise && upfrontPaise <= pricing.totalPaise);
 
   async function handleCompleteCheckout() {
@@ -277,7 +276,13 @@ export function CheckoutForm({ plan }: { plan: CheckoutPlanData }) {
                     max={paiseToRupees(pricing.totalPaise)}
                     step="1"
                     value={customUpfrontRupees}
-                    onChange={(e) => setCustomUpfrontRupees(Number(e.target.value))}
+                    onChange={(e) => setCustomUpfrontRupees(e.target.value)}
+                    onBlur={(e) => {
+                      const val = Number(e.target.value);
+                      if (!e.target.value || isNaN(val)) {
+                        setCustomUpfrontRupees(String(paiseToRupees(pricing.minimumUpfrontPaise)));
+                      }
+                    }}
                     className="pl-7 font-mono font-semibold"
                   />
                 </div>
