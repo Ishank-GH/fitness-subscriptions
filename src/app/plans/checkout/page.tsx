@@ -9,6 +9,7 @@ import { calculatePricing } from "@/lib/pricing/engine";
 import { deriveSubscriptionStatus } from "@/lib/subscription-status";
 import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { MemberSubnav } from "@/components/member-subnav";
 import { CheckoutForm, CheckoutPlanData } from "@/components/checkout-form";
 
 export const dynamic = "force-dynamic";
@@ -43,35 +44,38 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   if (hasActiveSubscription && user?.subscription) {
     return (
-      <div className="container mx-auto max-w-2xl px-4 py-16 sm:py-24 space-y-6">
-        <Link
-          href="/plans"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to plans
-        </Link>
+      <div className="flex-1 flex flex-col bg-background">
+        <MemberSubnav />
+        <div className="container mx-auto max-w-2xl px-4 py-16 sm:py-24 space-y-6">
+          <Link
+            href="/plans"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to plans
+          </Link>
 
-        <div className="rounded-sm border border-border bg-card p-6 sm:p-8 space-y-4">
-          <h2 className="text-xl font-display font-bold text-foreground">
-            Active subscription in progress
-          </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Your account currently has an active training pass valid through{" "}
-            <strong className="text-foreground">{formatDate(user.subscription.endDate)}</strong>.
-            Athletes maintain one active membership block at a time.
-          </p>
-          <div className="pt-4 flex flex-wrap gap-3">
-            <Link href="/dashboard">
-              <Button size="sm" className="font-mono text-xs">
-                Member dashboard
-              </Button>
-            </Link>
-            <Link href="/billing">
-              <Button variant="outline" size="sm" className="font-mono text-xs">
-                View invoices
-              </Button>
-            </Link>
+          <div className="rounded-sm border border-border bg-card p-6 sm:p-8 space-y-4">
+            <h2 className="text-xl font-display font-bold text-foreground">
+              Active subscription in progress
+            </h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Your account currently has an active training pass valid through{" "}
+              <strong className="text-foreground">{formatDate(user.subscription.endDate)}</strong>.
+              Athletes maintain one active membership block at a time.
+            </p>
+            <div className="pt-4 flex flex-wrap gap-3">
+              <Link href="/dashboard">
+                <Button size="sm" className="font-mono text-xs">
+                  Member dashboard
+                </Button>
+              </Link>
+              <Link href="/billing">
+                <Button variant="outline" size="sm" className="font-mono text-xs">
+                  View invoices
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -115,24 +119,27 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   };
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8">
-      <div>
-        <Link
-          href="/plans"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono mb-4"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to plans
-        </Link>
-        <h1 className="text-3xl sm:text-4xl font-bold font-display tracking-tight text-foreground">
-          Complete registration
-        </h1>
-        <p className="text-sm text-muted-foreground mt-2">
-          Review training block terms, apply coupons, and choose full or 50% upfront payment.
-        </p>
-      </div>
+    <div className="flex-1 flex flex-col bg-background">
+      <MemberSubnav />
+      <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
+        <div>
+          <Link
+            href="/plans"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono mb-4"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to plans
+          </Link>
+          <h1 className="text-3xl sm:text-4xl font-bold font-display tracking-tight text-foreground">
+            Complete registration
+          </h1>
+          <p className="text-sm text-muted-foreground mt-2">
+            Review training block terms, apply coupons, and choose full or 50% upfront payment.
+          </p>
+        </div>
 
-      <CheckoutForm plan={planData} />
+        <CheckoutForm plan={planData} />
+      </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { User } from "@/lib/db/models/user";
 import { deriveSubscriptionStatus } from "@/lib/subscription-status";
 import { calculatePricing } from "@/lib/pricing/engine";
 import { formatDurationMonths } from "@/lib/format";
+import { MemberSubnav } from "@/components/member-subnav";
 import {
   PlanSelector,
   SerializedPlanWithPricing,
@@ -114,36 +115,49 @@ export default async function PlansPage() {
     }
   }
 
-  return (
-    <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12">
-      {/* Header (No uppercase eyebrow labels) */}
-      <div className="max-w-2xl space-y-3">
-        <Link
-          href="/"
-          className="font-mono text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Home
-        </Link>
-        <h1 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl tracking-tight text-foreground">
-          Membership plans
-        </h1>
-        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-          Transparent rates in Indian Rupees with zero initiation fees. Pay in full or choose a 50% upfront installment on multi-month training blocks.
-        </p>
-      </div>
+  const isMember = Boolean(session && session.role !== "ADMIN");
 
-      {serializedPlans.length === 0 ? (
-        <EmptyState
-          title="No active plans"
-          description="Membership options will appear here when a plan is live."
-        />
-      ) : (
-        <PlanSelector
-          plans={serializedPlans}
-          hasActiveSubscription={hasActiveSubscription}
-        />
-      )}
+  return (
+    <div className="flex-1 flex flex-col bg-background">
+      {isMember && <MemberSubnav />}
+      <div
+        className={
+          isMember
+            ? "container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8"
+            : "container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12"
+        }
+      >
+        {/* Header */}
+        <div className="max-w-2xl space-y-3">
+          {!isMember && (
+            <Link
+              href="/"
+              className="font-mono text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Home
+            </Link>
+          )}
+          <h1 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl tracking-tight text-foreground">
+            Membership plans
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+            Transparent rates in Indian Rupees with zero initiation fees. Pay in full or choose a 50% upfront installment on multi-month training blocks.
+          </p>
+        </div>
+
+        {serializedPlans.length === 0 ? (
+          <EmptyState
+            title="No active plans"
+            description="Membership options will appear here when a plan is live."
+          />
+        ) : (
+          <PlanSelector
+            plans={serializedPlans}
+            hasActiveSubscription={hasActiveSubscription}
+          />
+        )}
+      </div>
     </div>
   );
 }
