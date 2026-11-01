@@ -92,17 +92,17 @@ export function PlanSelector({
               aria-selected={isSelected}
               onClick={() => setSelectedIndex(idx)}
               className={cn(
-                "flex-1 py-3 px-4 text-xs sm:text-sm font-medium rounded-sm transition-colors font-mono outline-none focus-visible:ring-2 focus-visible:ring-foreground",
+                "flex-1 py-2.5 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium rounded-sm transition-colors font-mono outline-none focus-visible:ring-2 focus-visible:ring-foreground flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-0",
                 isSelected
                   ? "bg-primary text-primary-foreground font-semibold"
                   : "text-muted-foreground hover:text-foreground hover:bg-background/40"
               )}
             >
-              <span>{p.name}</span>
+              <span className="text-center">{p.name}</span>
               {p.discountPercentage > 0 && (
                 <span
                   className={cn(
-                    "ml-2 text-[10px] px-1.5 py-0.5 rounded-sm border",
+                    "sm:ml-2 text-[10px] px-1.5 py-0.5 rounded-sm border whitespace-nowrap shrink-0",
                     isSelected
                       ? "border-primary-foreground/30 text-primary-foreground"
                       : "border-border text-foreground"
