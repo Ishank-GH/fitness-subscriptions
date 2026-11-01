@@ -11,6 +11,7 @@ import {
   PlanSelector,
   SerializedPlanWithPricing,
 } from "@/components/plan-selector";
+import { EmptyState } from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -43,33 +44,6 @@ const DEFAULT_FEATURES: Record<number, string[]> = {
   ],
 };
 
-const FALLBACK_PLANS = [
-  {
-    id: "plan-1m",
-    name: "1-Month Foundation",
-    durationMonths: 1,
-    baseMonthlyPricePaise: 450000,
-    discountPercentage: 0,
-    allowPartialPayment: false,
-  },
-  {
-    id: "plan-3m",
-    name: "3-Month Progression",
-    durationMonths: 3,
-    baseMonthlyPricePaise: 400000,
-    discountPercentage: 10,
-    allowPartialPayment: true,
-  },
-  {
-    id: "plan-12m",
-    name: "12-Month Athlete",
-    durationMonths: 12,
-    baseMonthlyPricePaise: 350000,
-    discountPercentage: 20,
-    allowPartialPayment: true,
-  },
-];
-
 export default async function PlansPage() {
   await connectToDatabase();
 
@@ -77,17 +51,14 @@ export default async function PlansPage() {
     .sort({ durationMonths: 1 })
     .lean();
 
-  const plansSource =
-    dbPlans.length > 0
-      ? dbPlans.map((p) => ({
-          id: p._id.toString(),
-          name: p.name,
-          durationMonths: p.durationMonths,
-          baseMonthlyPricePaise: p.baseMonthlyPricePaise,
-          discountPercentage: p.discountPercentage,
-          allowPartialPayment: p.allowPartialPayment,
-        }))
-      : FALLBACK_PLANS;
+  const plansSource = dbPlans.map((p) => ({
+    id: p._id.toString(),
+    name: p.name,
+    durationMonths: p.durationMonths,
+    baseMonthlyPricePaise: p.baseMonthlyPricePaise,
+    discountPercentage: p.discountPercentage,
+    allowPartialPayment: p.allowPartialPayment,
+  }));
 
   // Run calculatePricing strictly on the server; pass plain serialized numbers
   const serializedPlans: SerializedPlanWithPricing[] = plansSource.map((plan) => {
@@ -162,11 +133,17 @@ export default async function PlansPage() {
         </p>
       </div>
 
-      {/* Interactive Plan Selector */}
-      <PlanSelector
-        plans={serializedPlans}
-        hasActiveSubscription={hasActiveSubscription}
-      />
+      {serializedPlans.length === 0 ? (
+        <EmptyState
+          title="No active plans"
+          description="Membership options will appear here when a plan is live."
+        />
+      ) : (
+        <PlanSelector
+          plans={serializedPlans}
+          hasActiveSubscription={hasActiveSubscription}
+        />
+      )}
     </div>
   );
 }

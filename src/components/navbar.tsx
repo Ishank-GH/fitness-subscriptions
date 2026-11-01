@@ -81,6 +81,11 @@ export function Navbar() {
                   Sign in
                 </Button>
               </Link>
+              <Link href="/sign-up">
+                <Button variant="outline" size="sm" className="text-xs">
+                  Sign up
+                </Button>
+              </Link>
               <Link href="/plans">
                 <Button size="sm" className="text-xs gap-1">
                   Join
@@ -135,19 +140,24 @@ export function Navbar() {
                   </Button>
                 </Link>
               ) : (
-                <>
+                <div className="grid grid-cols-2 gap-2">
                   <Link href="/sign-in" className="w-full">
                     <Button variant="outline" className="w-full justify-center text-xs" size="sm">
                       Sign in
                     </Button>
                   </Link>
-                  <Link href="/plans" className="w-full">
+                  <Link href="/sign-up" className="w-full">
+                    <Button variant="outline" className="w-full justify-center text-xs" size="sm">
+                      Sign up
+                    </Button>
+                  </Link>
+                  <Link href="/plans" className="col-span-2 w-full">
                     <Button className="w-full justify-center text-xs gap-1" size="sm">
                       Join
                       <ArrowUpRight className="h-3.5 w-3.5" />
                     </Button>
                   </Link>
-                </>
+                </div>
               )}
             </div>
           </nav>

@@ -6,35 +6,9 @@ import { calculatePricing } from "@/lib/pricing/engine";
 import { formatPaiseToRupees, formatDurationMonths } from "@/lib/format";
 import { HeroSection } from "@/components/hero-section";
 import { ClaimsIndexList } from "@/components/claims-index-list";
+import { EmptyState } from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
-
-const FALLBACK_PLANS = [
-  {
-    id: "plan-1m",
-    name: "1-Month Foundation",
-    durationMonths: 1,
-    baseMonthlyPricePaise: 450000,
-    discountPercentage: 0,
-    allowPartialPayment: false,
-  },
-  {
-    id: "plan-3m",
-    name: "3-Month Progression",
-    durationMonths: 3,
-    baseMonthlyPricePaise: 400000,
-    discountPercentage: 10,
-    allowPartialPayment: true,
-  },
-  {
-    id: "plan-12m",
-    name: "12-Month Athlete",
-    durationMonths: 12,
-    baseMonthlyPricePaise: 350000,
-    discountPercentage: 20,
-    allowPartialPayment: true,
-  },
-];
 
 export default async function HomePage() {
   await connectToDatabase();
@@ -43,19 +17,14 @@ export default async function HomePage() {
     .sort({ durationMonths: 1 })
     .lean();
 
-  const plansSource =
-    dbPlans.length > 0
-      ? dbPlans.map((p) => ({
-          id: p._id.toString(),
-          name: p.name,
-          durationMonths: p.durationMonths,
-          baseMonthlyPricePaise: p.baseMonthlyPricePaise,
-          discountPercentage: p.discountPercentage,
-          allowPartialPayment: p.allowPartialPayment,
-        }))
-      : FALLBACK_PLANS;
-
-  const plansWithPricing = plansSource.map((p) => {
+  const plansWithPricing = dbPlans.map((p) => ({
+    id: p._id.toString(),
+    name: p.name,
+    durationMonths: p.durationMonths,
+    baseMonthlyPricePaise: p.baseMonthlyPricePaise,
+    discountPercentage: p.discountPercentage,
+    allowPartialPayment: p.allowPartialPayment,
+  })).map((p) => {
     const pricing = calculatePricing({
       plan: {
         baseMonthlyPricePaise: p.baseMonthlyPricePaise,
@@ -119,45 +88,52 @@ export default async function HomePage() {
           </div>
 
           {/* Plan index rows */}
-          <div className="w-full divide-y divide-border border-y border-border">
-            {plansWithPricing.map((plan) => (
-              <Link
-                key={plan.id}
-                href="/plans"
-                className="group flex flex-col sm:flex-row sm:items-center justify-between py-6 px-3 sm:px-4 -mx-3 sm:-mx-4 hover:bg-card transition-colors duration-200 gap-4"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-display font-bold text-xl sm:text-2xl text-foreground tracking-tight">
-                      {plan.name}
-                    </h3>
-                    {plan.discountPercentage > 0 && (
-                      <span className="font-mono text-xs px-2 py-0.5 rounded-sm border border-border bg-background text-foreground font-medium">
-                        {plan.discountPercentage}% off
-                      </span>
-                    )}
+          {plansWithPricing.length === 0 ? (
+            <EmptyState
+              title="No plans available"
+              description="Membership options will appear here when a plan is live."
+            />
+          ) : (
+            <div className="w-full divide-y divide-border border-y border-border">
+              {plansWithPricing.map((plan) => (
+                <Link
+                  key={plan.id}
+                  href="/plans"
+                  className="group flex flex-col sm:flex-row sm:items-center justify-between py-6 px-3 sm:px-4 -mx-3 sm:-mx-4 hover:bg-card transition-colors duration-200 gap-4"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-display font-bold text-xl sm:text-2xl text-foreground tracking-tight">
+                        {plan.name}
+                      </h3>
+                      {plan.discountPercentage > 0 && (
+                        <span className="font-mono text-xs px-2 py-0.5 rounded-sm border border-border bg-background text-foreground font-medium">
+                          {plan.discountPercentage}% off
+                        </span>
+                      )}
+                    </div>
+                    <p className="font-mono text-xs text-muted-foreground">
+                      {plan.durationText}
+                      {plan.allowPartialPayment && " · 50% upfront available"}
+                    </p>
                   </div>
-                  <p className="font-mono text-xs text-muted-foreground">
-                    {plan.durationText}
-                    {plan.allowPartialPayment && " · 50% upfront available"}
-                  </p>
-                </div>
 
-                <div className="flex items-baseline sm:items-center justify-between sm:justify-end gap-6 sm:gap-8 font-mono">
-                  <div className="text-left sm:text-right">
-                    <span className="text-base sm:text-lg font-semibold text-foreground block tabular-nums">
-                      {plan.effectiveMonthly}
-                      <span className="text-xs text-muted-foreground font-normal"> / mo</span>
-                    </span>
-                    <span className="text-xs text-muted-foreground block tabular-nums">
-                      {plan.total} total
-                    </span>
+                  <div className="flex items-baseline sm:items-center justify-between sm:justify-end gap-6 sm:gap-8 font-mono">
+                    <div className="text-left sm:text-right">
+                      <span className="text-base sm:text-lg font-semibold text-foreground block tabular-nums">
+                        {plan.effectiveMonthly}
+                        <span className="text-xs text-muted-foreground font-normal"> / mo</span>
+                      </span>
+                      <span className="text-xs text-muted-foreground block tabular-nums">
+                        {plan.total} total
+                      </span>
+                    </div>
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" />
                   </div>
-                  <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" />
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>
