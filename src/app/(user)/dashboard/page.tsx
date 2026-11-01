@@ -96,10 +96,6 @@ export default async function MemberDashboardPage({ searchParams }: MemberDashbo
             Registered {formatDate(user.createdAt)}
           </p>
         </div>
-        <div className="flex gap-3">
-          <Link href="/plans"><Button variant="outline" size="sm" className="font-mono text-xs">Plans</Button></Link>
-          <Link href="/billing"><Button variant="outline" size="sm" className="font-mono text-xs">Billing</Button></Link>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
